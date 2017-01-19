@@ -26,6 +26,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.TileOverlayOptions;
 
+import java.util.Map;
+
 import static com.example.mapwithmarker.R.id.map;
 import static com.google.android.gms.maps.CameraUpdateFactory.zoomIn;
 
@@ -38,8 +40,11 @@ public class MapsMarkerActivity extends AppCompatActivity
     private static final int MAX_ZOOM_LEVEL = 21;
     private GoogleMap myMap;
     private TextView mTapTextView;
-    private LatLng currentLatLng;
+    private LatLng currentLatLng = new LatLng(39.933333, 32.866667); //Ankara
     private MapLoad mapLoad = new MapLoad();
+    private int currentZoomLevel;
+    private int iZoom;
+
 
     private void setUpMap() {
         myMap.setMapType(GoogleMap.MAP_TYPE_NONE);
@@ -73,12 +78,13 @@ public class MapsMarkerActivity extends AppCompatActivity
     }
 
     public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
-        if (myMap != null) {
+        if (myMap != null && currentLatLng != null) {
             double radius_m = 2e3 * (pos + 1);
             // Add a circle in Sydney
             myMap.clear();
+            myMap.addMarker(new MarkerOptions().position(currentLatLng).title("initial victim location"));
             Circle circle = myMap.addCircle(new CircleOptions()
-                    .center(new LatLng(39.933333, 32.866667))
+                    .center(currentLatLng)
                     .radius(radius_m)
                     .strokeColor(Color.RED));
             //.fillColor(Color.BLUE));
@@ -101,14 +107,10 @@ public class MapsMarkerActivity extends AppCompatActivity
      */
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        // Add a marker in Sydney, Australia,
-        // and move the map's camera to the same location.
-        LatLng ankara = new LatLng(39.933333, 32.866667);
-        googleMap.addMarker(new MarkerOptions().position(ankara).title("Marker in Ankara"));
-        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(ankara, 10.0f));
         myMap = googleMap;
         myMap.setOnMapClickListener(this);
         myMap.setOnMapLongClickListener(this);
+        myMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 5.0f));
     }
 
     @Override
@@ -118,17 +120,28 @@ public class MapsMarkerActivity extends AppCompatActivity
 
     @Override
     public void onMapLongClick(LatLng latLng) {
-        currentLatLng = latLng;
         mTapTextView.setText("long pressed, point: " + latLng);
+        currentLatLng = latLng;
+        myMap.addMarker(new MarkerOptions().position(currentLatLng).title("initial victim location"));
+        myMap.moveCamera(CameraUpdateFactory.newLatLng(currentLatLng));
         CameraPosition currentPos = myMap.getCameraPosition();
-
+        currentZoomLevel = (int)currentPos.zoom;
         new ZoomMap().execute();
-
-        //myMap.animateCamera(CameraUpdateFactory.newCameraPosition(currentPos));
     }
 
     private synchronized GoogleMap getMyMap() {
         return myMap;
+    }
+
+    private synchronized MapLoad getMapLoad() {
+        return mapLoad;
+    }
+
+    private synchronized void setMapZoom(int iZoom) {
+        getMapLoad().setIsMapLoaded(false);
+        getMyMap().setOnMapLoadedCallback(getMapLoad());
+        CameraUpdate locZoom = CameraUpdateFactory.newLatLngZoom(currentLatLng, iZoom);
+        getMyMap().animateCamera(locZoom);
     }
 
     private class ZoomMap extends AsyncTask<String, Void, Void> {
@@ -137,18 +150,26 @@ public class MapsMarkerActivity extends AppCompatActivity
          * delivers it the parameters given to AsyncTask.execute()
          */
         protected Void doInBackground(String... urls) {
-            for (int iZoom = 1; iZoom < MAX_ZOOM_LEVEL; iZoom++) {
-                mapLoad.setIsMapLoaded(false);
-                getMyMap().setOnMapLoadedCallback(mapLoad);
-                CameraUpdate locZoom = CameraUpdateFactory.newLatLngZoom(currentLatLng, iZoom);
-                myMap.animateCamera(locZoom);
-                while (!mapLoad.isMapLoaded()) {
+            for (iZoom = currentZoomLevel; iZoom < MAX_ZOOM_LEVEL; iZoom++) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        setMapZoom(iZoom);
+                    }
+                });
+                while (!getMapLoad().isMapLoaded()) { //wait until map loading at iZoom level is finished.
                     try {
                         Thread.sleep(100);
                     } catch (InterruptedException e) {
                     }
                 }
             }
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    setMapZoom(currentZoomLevel);
+                }
+            });
             return null;
         }
 
@@ -164,7 +185,7 @@ public class MapsMarkerActivity extends AppCompatActivity
 
         private boolean isMapLoaded = false;
 
-        public boolean isMapLoaded() {
+        public synchronized boolean isMapLoaded() {
             return isMapLoaded;
         }
 
