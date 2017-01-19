@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Map With Marker</string>
+    <string name="title_activity_maps">Map with Marker</string>
+    <string-array name="planets_array">
+        <item>Mercury</item>
+        <item>Venus</item>
+        <item>Earth</item>
+        <item>Mars</item>
+        <item>Jupiter</item>
+    </string-array>
+</resources>
