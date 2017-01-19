@@ -1,7 +1,10 @@
 package com.example.mapwithmarker;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -26,6 +29,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.TileOverlayOptions;
 
+import java.net.InetAddress;
 import java.util.Map;
 
 import static com.example.mapwithmarker.R.id.map;
@@ -120,28 +124,24 @@ public class MapsMarkerActivity extends AppCompatActivity
 
     @Override
     public void onMapLongClick(LatLng latLng) {
-        mTapTextView.setText("long pressed, point: " + latLng);
-        currentLatLng = latLng;
-        myMap.addMarker(new MarkerOptions().position(currentLatLng).title("initial victim location"));
-        myMap.moveCamera(CameraUpdateFactory.newLatLng(currentLatLng));
-        CameraPosition currentPos = myMap.getCameraPosition();
-        currentZoomLevel = (int)currentPos.zoom;
-        new ZoomMap().execute();
+        if (isOnline()) {
+            mTapTextView.setText("long pressed, point: " + latLng);
+            currentLatLng = latLng;
+            myMap.addMarker(new MarkerOptions().position(currentLatLng).title("initial victim location"));
+            myMap.moveCamera(CameraUpdateFactory.newLatLng(currentLatLng));
+            CameraPosition currentPos = myMap.getCameraPosition();
+            currentZoomLevel = (int) currentPos.zoom;
+            new ZoomMap().execute();
+        } else {
+            mTapTextView.setText("ERROR: No internet connection!");
+        }
     }
 
-    private synchronized GoogleMap getMyMap() {
-        return myMap;
-    }
-
-    private synchronized MapLoad getMapLoad() {
-        return mapLoad;
-    }
-
-    private synchronized void setMapZoom(int iZoom) {
-        getMapLoad().setIsMapLoaded(false);
-        getMyMap().setOnMapLoadedCallback(getMapLoad());
+    private void setMapZoom(int iZoom) {
+        mapLoad.setIsMapLoaded(false);
+        myMap.setOnMapLoadedCallback(mapLoad);
         CameraUpdate locZoom = CameraUpdateFactory.newLatLngZoom(currentLatLng, iZoom);
-        getMyMap().animateCamera(locZoom);
+        myMap.animateCamera(locZoom);
     }
 
     private class ZoomMap extends AsyncTask<String, Void, Void> {
@@ -150,14 +150,15 @@ public class MapsMarkerActivity extends AppCompatActivity
          * delivers it the parameters given to AsyncTask.execute()
          */
         protected Void doInBackground(String... urls) {
-            for (iZoom = currentZoomLevel; iZoom < MAX_ZOOM_LEVEL; iZoom++) {
+            for (iZoom = currentZoomLevel; iZoom <= MAX_ZOOM_LEVEL; iZoom++) {
+                mapLoad.setIsMapLoaded(false);
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         setMapZoom(iZoom);
                     }
                 });
-                while (!getMapLoad().isMapLoaded()) { //wait until map loading at iZoom level is finished.
+                while (!mapLoad.isMapLoaded()) { //wait until map loading at iZoom level is finished.
                     try {
                         Thread.sleep(100);
                     } catch (InterruptedException e) {
@@ -185,7 +186,7 @@ public class MapsMarkerActivity extends AppCompatActivity
 
         private boolean isMapLoaded = false;
 
-        public synchronized boolean isMapLoaded() {
+        public boolean isMapLoaded() {
             return isMapLoaded;
         }
 
@@ -198,6 +199,15 @@ public class MapsMarkerActivity extends AppCompatActivity
             mTapTextView.setText("Map finished loading zoom level: " + myMap.getCameraPosition().zoom);
             isMapLoaded = true;
         }
+    }
+
+    /**
+     * http://stackoverflow.com/a/4009133/51358
+     */
+    public boolean isOnline() {
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        return netInfo != null && netInfo.isConnectedOrConnecting();
     }
 
 }
