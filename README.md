@@ -1,2 +1,2 @@
 # rescuemap
-Andorid app that shows the estimated are of person to be rescued
+Andorid app that shows the estimated area of person to be rescued
