@@ -135,7 +135,7 @@ public class MapsMarkerActivity extends AppCompatActivity
             currentZoomLevel = (int) currentPos.zoom;
             new ZoomMap().execute();
         } else {
-            mTapTextView.setText("ERROR: No internet connection!");
+            mTapTextView.setText(R.string.label_internet_error);
         }
     }
 
