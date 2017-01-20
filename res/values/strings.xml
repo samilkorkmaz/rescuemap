@@ -1,6 +1,6 @@
 <resources>
-    <string name="app_name">Map With Marker</string>
-    <string name="title_activity_maps">Map with Marker</string>
+    <string name="app_name">Rescue Map</string>
+    <string name="title_activity_maps">Rescue Map</string>
     <string name="label_finished_zoom">Finished zoom level</string>
     <string-array name="victim_category_array">
         <item>Child 7 years old</item>
