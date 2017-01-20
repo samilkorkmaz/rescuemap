@@ -68,6 +68,7 @@ public class MapsMarkerActivity extends AppCompatActivity
         mTapTextView = (TextView) findViewById(R.id.tap_text);
     }
 
+    @Override
     public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
         if (myMap != null && currentLatLng != null) {
             removePrevCircleAtCurrentLatLng();
@@ -94,6 +95,7 @@ public class MapsMarkerActivity extends AppCompatActivity
         }
     }
 
+    @Override
     public void onNothingSelected(AdapterView<?> parent) {
         // Another interface callback
     }
@@ -149,6 +151,7 @@ public class MapsMarkerActivity extends AppCompatActivity
          * The system calls this to perform work in a worker thread and
          * delivers it the parameters given to AsyncTask.execute()
          */
+        @Override
         protected Void doInBackground(String... urls) {
             for (iZoom = currentZoomLevel; iZoom <= MAX_ZOOM_LEVEL; iZoom++) {
                 mapLoad.setIsMapLoaded(false);
