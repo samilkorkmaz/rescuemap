@@ -17,23 +17,18 @@ import android.widget.TextView;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.GoogleMap.OnMapClickListener;
-import com.google.android.gms.maps.GoogleMap.OnMapLongClickListener;
 import com.google.android.gms.maps.GoogleMap.OnMapLoadedCallback;
+import com.google.android.gms.maps.GoogleMap.OnMapLongClickListener;
+import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.TileOverlayOptions;
-
-import java.net.InetAddress;
-import java.util.Map;
 
 import static com.example.mapwithmarker.R.id.map;
-import static com.google.android.gms.maps.CameraUpdateFactory.zoomIn;
 
 /**
  * An activity that displays a Google map with a marker (pin) to indicate a particular location.
@@ -48,16 +43,9 @@ public class MapsMarkerActivity extends AppCompatActivity
     private MapLoad mapLoad = new MapLoad();
     private int currentZoomLevel;
     private int iZoom;
-
-
-    private void setUpMap() {
-        myMap.setMapType(GoogleMap.MAP_TYPE_NONE);
-
-        myMap.addTileOverlay(new TileOverlayOptions().tileProvider(new CustomMapTileProvider(getResources().getAssets())));
-
-        CameraUpdate upd = CameraUpdateFactory.newLatLngZoom(new LatLng(39.933333, 32.866667), 0.5f); //Ankara
-        myMap.moveCamera(upd);
-    }
+    private double currentRadius_m;
+    private Spinner spinner;
+    Circle mapCircle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,13 +54,12 @@ public class MapsMarkerActivity extends AppCompatActivity
         setContentView(R.layout.activity_maps);
         // Get the SupportMapFragment and request notification
         // when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(map);
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(map);
         mapFragment.getMapAsync(this);
-        Spinner spinner = (Spinner) findViewById(R.id.planets_spinner);
+        spinner = (Spinner) findViewById(R.id.planets_spinner);
         // Create an ArrayAdapter using the string array and a default spinner layout
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
-                R.array.planets_array, android.R.layout.simple_spinner_item);
+                R.array.victim_category_array, android.R.layout.simple_spinner_item);
         // Specify the layout to use when the list of choices appears
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         // Apply the adapter to the spinner
@@ -83,16 +70,27 @@ public class MapsMarkerActivity extends AppCompatActivity
 
     public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
         if (myMap != null && currentLatLng != null) {
-            double radius_m = 2e3 * (pos + 1);
-            // Add a circle in Sydney
-            myMap.clear();
+            removePrevCircleAtCurrentLatLng();
             myMap.addMarker(new MarkerOptions().position(currentLatLng).title("initial victim location"));
-            Circle circle = myMap.addCircle(new CircleOptions()
-                    .center(currentLatLng)
-                    .radius(radius_m)
-                    .strokeColor(Color.RED));
-            //.fillColor(Color.BLUE));
+            currentRadius_m = (pos + 1) * 1e4;
+            addCircle(currentRadius_m);
             mTapTextView.setText("pos: " + pos);
+        }
+    }
+
+    private void addCircle(double radius_m) {
+        mapCircle = myMap.addCircle(new CircleOptions()
+                .center(currentLatLng)
+                .radius(radius_m)
+                .strokeColor(Color.RED));
+    }
+
+    /**
+     * http://stackoverflow.com/a/15481266/51358
+     */
+    private void removePrevCircleAtCurrentLatLng() {
+        if (mapCircle != null) {
+            mapCircle.remove();
         }
     }
 
@@ -115,6 +113,7 @@ public class MapsMarkerActivity extends AppCompatActivity
         myMap.setOnMapClickListener(this);
         myMap.setOnMapLongClickListener(this);
         myMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 5.0f));
+        addCircle((spinner.getSelectedItemPosition() + 1) * 1e4);
     }
 
     @Override
@@ -128,6 +127,7 @@ public class MapsMarkerActivity extends AppCompatActivity
             mTapTextView.setText("long pressed, point: " + latLng);
             currentLatLng = latLng;
             myMap.addMarker(new MarkerOptions().position(currentLatLng).title("initial victim location"));
+            addCircle(currentRadius_m);
             myMap.moveCamera(CameraUpdateFactory.newLatLng(currentLatLng));
             CameraPosition currentPos = myMap.getCameraPosition();
             currentZoomLevel = (int) currentPos.zoom;
@@ -196,7 +196,8 @@ public class MapsMarkerActivity extends AppCompatActivity
 
         @Override
         public void onMapLoaded() {
-            mTapTextView.setText("Map finished loading zoom level: " + myMap.getCameraPosition().zoom);
+            mTapTextView.setText(getResources().getText(R.string.label_finished_zoom) + ": " +
+                    myMap.getCameraPosition().zoom);
             isMapLoaded = true;
         }
     }
