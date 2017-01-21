@@ -7,6 +7,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.AdapterView;
@@ -28,6 +29,9 @@ import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import static com.example.mapwithmarker.R.id.map;
 
 /**
@@ -37,15 +41,18 @@ public class MapsMarkerActivity extends AppCompatActivity
         implements OnMapReadyCallback, OnMapClickListener, OnMapLongClickListener, AdapterView.OnItemSelectedListener {
 
     private static final int MAX_ZOOM_LEVEL = 21;
+    private static final long SECOND2MS = 1000;
     private GoogleMap myMap;
     private TextView mTapTextView;
     private LatLng currentLatLng = new LatLng(39.933333, 32.866667); //Ankara
     private MapLoad mapLoad = new MapLoad();
     private int currentZoomLevel;
     private int iZoom;
-    private double currentRadius_m;
     private Spinner spinner;
     Circle mapCircle;
+    long prevTime_ms = SystemClock.elapsedRealtime();
+    double speed_mps = 500;
+    double prevRadius_m = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,15 +73,32 @@ public class MapsMarkerActivity extends AppCompatActivity
         spinner.setAdapter(adapter);
         spinner.setOnItemSelectedListener(this);
         mTapTextView = (TextView) findViewById(R.id.tap_text);
+
+        Timer timer = new Timer();
+        timer.scheduleAtFixedRate(new TimerTask() { //update circle drawings every second
+            @Override
+            public void run() {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        long elapsedTime_s = (SystemClock.elapsedRealtime() - prevTime_ms) / SECOND2MS;
+                        prevTime_ms = SystemClock.elapsedRealtime();
+                        removePrevCircleAtCurrentLatLng();
+                        double deltaRadius_m = elapsedTime_s * speed_mps;
+                        double newRadius_m = prevRadius_m + deltaRadius_m;
+                        addCircle(newRadius_m);
+                        prevRadius_m = newRadius_m;
+                    }
+                });
+            }
+        }, 0, SECOND2MS);
     }
 
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
         if (myMap != null && currentLatLng != null) {
-            removePrevCircleAtCurrentLatLng();
             myMap.addMarker(new MarkerOptions().position(currentLatLng).title("initial victim location"));
-            currentRadius_m = (pos + 1) * 1e4;
-            addCircle(currentRadius_m);
+            speed_mps = (pos + 1) * 500;
             mTapTextView.setText("pos: " + pos);
         }
     }
@@ -115,7 +139,6 @@ public class MapsMarkerActivity extends AppCompatActivity
         myMap.setOnMapClickListener(this);
         myMap.setOnMapLongClickListener(this);
         myMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 5.0f));
-        addCircle((spinner.getSelectedItemPosition() + 1) * 1e4);
     }
 
     @Override
@@ -129,7 +152,6 @@ public class MapsMarkerActivity extends AppCompatActivity
             mTapTextView.setText("long pressed, point: " + latLng);
             currentLatLng = latLng;
             myMap.addMarker(new MarkerOptions().position(currentLatLng).title("initial victim location"));
-            addCircle(currentRadius_m);
             myMap.moveCamera(CameraUpdateFactory.newLatLng(currentLatLng));
             CameraPosition currentPos = myMap.getCameraPosition();
             currentZoomLevel = (int) currentPos.zoom;
