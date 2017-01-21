@@ -1,6 +1,7 @@
 package com.example.mapwithmarker;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
@@ -8,12 +9,15 @@ import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -29,21 +33,27 @@ import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import static com.example.mapwithmarker.R.id.etDate;
 import static com.example.mapwithmarker.R.id.map;
+import static com.google.android.gms.analytics.internal.zzy.et;
 
 /**
  * An activity that displays a Google map with a marker (pin) to indicate a particular location.
  */
 public class MapsMarkerActivity extends AppCompatActivity
-        implements OnMapReadyCallback, OnMapClickListener, OnMapLongClickListener, AdapterView.OnItemSelectedListener {
+        implements OnMapReadyCallback, OnMapLongClickListener {
 
     private static final int MAX_ZOOM_LEVEL = 21;
     private static final long SECOND2MS = 1000;
+    private static final float DEFAULT_ZOOM_LEVEL = 5.0f;
     private GoogleMap myMap;
     private TextView mTapTextView;
     private LatLng currentLatLng = new LatLng(39.933333, 32.866667); //Ankara
@@ -55,6 +65,7 @@ public class MapsMarkerActivity extends AppCompatActivity
     List<Double> speedList_mps = new ArrayList<>();
     List<Double> prevRadiusList_m = new ArrayList<>();
     List<Circle> circleList = new ArrayList<>();
+    private boolean isFirst = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,41 +76,11 @@ public class MapsMarkerActivity extends AppCompatActivity
         // when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(map);
         mapFragment.getMapAsync(this);
-        spinner = (Spinner) findViewById(R.id.planets_spinner);
-        // Create an ArrayAdapter using the string array and a default spinner layout
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
-                R.array.victim_category_array, android.R.layout.simple_spinner_item);
-        // Specify the layout to use when the list of choices appears
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        // Apply the adapter to the spinner
-        spinner.setAdapter(adapter);
-        spinner.setOnItemSelectedListener(this);
         mTapTextView = (TextView) findViewById(R.id.tap_text);
-
-        Timer timer = new Timer();
-        timer.scheduleAtFixedRate(new TimerTask() { //update circle drawings every second
-            @Override
-            public void run() {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        updateCircles();
-                    }
-                });
-            }
-        }, 0, SECOND2MS);
-    }
-
-    @Override
-    public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
-        if (myMap != null && currentLatLng != null) {
-            myMap.addMarker(new MarkerOptions().position(currentLatLng).title("initial victim location"));
-            mTapTextView.setText("pos: " + pos);
-        }
     }
 
     private void updateCircles() {
-        for (int i = 0; i < circleList.size() ; i++) {
+        for (int i = 0; i < circleList.size(); i++) {
             LatLng center = circleList.get(i).getCenter();
             LatLng latLng = new LatLng(center.latitude, center.longitude);
             circleList.get(i).remove(); //clears previous circle
@@ -126,15 +107,10 @@ public class MapsMarkerActivity extends AppCompatActivity
 
     private void addCircleToList(LatLng latLng, double radius_m) {
         circleList.add(addCircleToMap(latLng, radius_m));
-        double speed_ms = (spinner.getSelectedItemPosition()+1)*100;
+        double speed_ms = (spinner.getSelectedItemPosition() + 1) * 100;
         speedList_mps.add(speed_ms);
         prevRadiusList_m.add(0D);
         prevTimeList_ms.add(SystemClock.elapsedRealtime());
-    }
-
-    @Override
-    public void onNothingSelected(AdapterView<?> parent) {
-        // Another interface callback
     }
 
     /**
@@ -149,27 +125,73 @@ public class MapsMarkerActivity extends AppCompatActivity
     @Override
     public void onMapReady(GoogleMap googleMap) {
         myMap = googleMap;
-        myMap.setOnMapClickListener(this);
         myMap.setOnMapLongClickListener(this);
-        myMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 5.0f));
+        myMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, DEFAULT_ZOOM_LEVEL));
     }
 
     @Override
-    public void onMapClick(LatLng latLng) {
-        mTapTextView.setText("tapped, point=" + latLng);
-    }
-
-    @Override
-    public void onMapLongClick(LatLng latLng) {
+    public void onMapLongClick(final LatLng clickedLatLng) {
         if (isOnline()) {
-            mTapTextView.setText("long pressed, point: " + latLng);
-            currentLatLng = latLng;
-            myMap.addMarker(new MarkerOptions().position(currentLatLng).title("initial victim location"));
-            myMap.moveCamera(CameraUpdateFactory.newLatLng(currentLatLng));
-            CameraPosition currentPos = myMap.getCameraPosition();
-            currentZoomLevel = (int) currentPos.zoom;
-            addCircleToList(latLng, 0);
-            new ZoomMap().execute();
+            View inputsView = getLayoutInflater().inflate(R.layout.inputs, null);
+            EditText etLocation = (EditText) inputsView.findViewById(R.id.etLocation);
+            etLocation.setText(String.format("%1.6f, 0%1.6f", clickedLatLng.latitude, clickedLatLng.longitude));
+            EditText etDate = (EditText) inputsView.findViewById(R.id.etDate);
+            etDate.setText(new SimpleDateFormat("dd.MM.yyyy").format(new Date()));
+            EditText etTime = (EditText) inputsView.findViewById(R.id.etTime);
+            etTime.setText(new SimpleDateFormat("HH:mm:ss").format(new Date()));
+            spinner = (Spinner) inputsView.findViewById(R.id.sVictimCategory);
+            ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
+                    R.array.victim_category_array, android.R.layout.simple_spinner_item);
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            spinner.setAdapter(adapter);
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(MapsMarkerActivity.this);
+            builder.setPositiveButton(R.string.OK, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    //leave empty, will be defined below
+                }
+            });
+            builder.setNegativeButton(R.string.Cancel, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int which) {
+                    Toast.makeText(MapsMarkerActivity.this, "Pressed Cancel", Toast.LENGTH_SHORT).show();
+                    dialogInterface.dismiss();
+                }
+            });
+            builder.setView(inputsView);
+            final AlertDialog dialog = builder.create();
+            dialog.show();
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Toast.makeText(MapsMarkerActivity.this, "Pressed OK", Toast.LENGTH_SHORT).show();
+                    dialog.dismiss();
+                    if (isFirst) {
+                        isFirst = false;
+                        Timer timer = new Timer();
+                        timer.scheduleAtFixedRate(new TimerTask() { //update circle drawings every second
+                            @Override
+                            public void run() {
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        updateCircles();
+                                    }
+                                });
+                            }
+                        }, 0, SECOND2MS);
+                    }
+                    currentLatLng = clickedLatLng;
+                    myMap.addMarker(new MarkerOptions().position(currentLatLng).title(
+                            String.format("victim %d", circleList.size()+1)));
+                    myMap.moveCamera(CameraUpdateFactory.newLatLng(currentLatLng));
+                    CameraPosition currentPos = myMap.getCameraPosition();
+                    currentZoomLevel = (int) currentPos.zoom;
+                    addCircleToList(clickedLatLng, 0);
+                    new ZoomMap().execute();
+                }
+            });
         } else {
             mTapTextView.setText(R.string.label_internet_error);
         }

@@ -13,16 +13,8 @@
         android:layout_height="match_parent"
         tools:context="com.example.mapwithmarker.MapsMarkerActivity"></fragment>
 
-    <Spinner
-        android:id="@+id/planets_spinner"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="#FFFFFFFF" />
-
     <TextView
         android:id="@+id/tap_text"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_toRightOf="@+id/planets_spinner"
-        android:text="Şamil says: Hello World!" />
+        android:layout_height="wrap_content"/>
 </RelativeLayout>
