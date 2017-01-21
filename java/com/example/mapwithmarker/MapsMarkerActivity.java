@@ -29,6 +29,8 @@ import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -49,10 +51,10 @@ public class MapsMarkerActivity extends AppCompatActivity
     private int currentZoomLevel;
     private int iZoom;
     private Spinner spinner;
-    Circle mapCircle;
-    long prevTime_ms = SystemClock.elapsedRealtime();
-    double speed_mps = 500;
-    double prevRadius_m = 0;
+    List<Long> prevTimeList_ms = new ArrayList<>();
+    List<Double> speedList_mps = new ArrayList<>();
+    List<Double> prevRadiusList_m = new ArrayList<>();
+    List<Circle> circleList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,13 +83,7 @@ public class MapsMarkerActivity extends AppCompatActivity
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        long elapsedTime_s = (SystemClock.elapsedRealtime() - prevTime_ms) / SECOND2MS;
-                        prevTime_ms = SystemClock.elapsedRealtime();
-                        removePrevCircleAtCurrentLatLng();
-                        double deltaRadius_m = elapsedTime_s * speed_mps;
-                        double newRadius_m = prevRadius_m + deltaRadius_m;
-                        addCircle(newRadius_m);
-                        prevRadius_m = newRadius_m;
+                        updateCircles();
                     }
                 });
             }
@@ -98,25 +94,42 @@ public class MapsMarkerActivity extends AppCompatActivity
     public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
         if (myMap != null && currentLatLng != null) {
             myMap.addMarker(new MarkerOptions().position(currentLatLng).title("initial victim location"));
-            speed_mps = (pos + 1) * 500;
             mTapTextView.setText("pos: " + pos);
         }
     }
 
-    private void addCircle(double radius_m) {
-        mapCircle = myMap.addCircle(new CircleOptions()
-                .center(currentLatLng)
-                .radius(radius_m)
-                .strokeColor(Color.RED));
+    private void updateCircles() {
+        for (int i = 0; i < circleList.size() ; i++) {
+            LatLng center = circleList.get(i).getCenter();
+            LatLng latLng = new LatLng(center.latitude, center.longitude);
+            circleList.get(i).remove(); //clears previous circle
+            long elapsedTime_s = (SystemClock.elapsedRealtime() - prevTimeList_ms.get(i)) / SECOND2MS;
+            prevTimeList_ms.set(i, SystemClock.elapsedRealtime());
+            double deltaRadius_m = elapsedTime_s * speedList_mps.get(i);
+            double newRadius_m = prevRadiusList_m.get(i) + deltaRadius_m;
+            prevRadiusList_m.set(i, newRadius_m);
+            updateCirclesList(i, latLng, newRadius_m);
+        }
     }
 
-    /**
-     * http://stackoverflow.com/a/15481266/51358
-     */
-    private void removePrevCircleAtCurrentLatLng() {
-        if (mapCircle != null) {
-            mapCircle.remove();
-        }
+    private void updateCirclesList(int i, LatLng latLng, double radius_m) {
+        circleList.set(i, addCircleToMap(latLng, radius_m));
+    }
+
+    private Circle addCircleToMap(LatLng latLng, double radius_m) {
+        Circle mapCircle = myMap.addCircle(new CircleOptions()
+                .center(latLng)
+                .radius(radius_m)
+                .strokeColor(Color.RED));
+        return mapCircle;
+    }
+
+    private void addCircleToList(LatLng latLng, double radius_m) {
+        circleList.add(addCircleToMap(latLng, radius_m));
+        double speed_ms = (spinner.getSelectedItemPosition()+1)*100;
+        speedList_mps.add(speed_ms);
+        prevRadiusList_m.add(0D);
+        prevTimeList_ms.add(SystemClock.elapsedRealtime());
     }
 
     @Override
@@ -155,6 +168,7 @@ public class MapsMarkerActivity extends AppCompatActivity
             myMap.moveCamera(CameraUpdateFactory.newLatLng(currentLatLng));
             CameraPosition currentPos = myMap.getCameraPosition();
             currentZoomLevel = (int) currentPos.zoom;
+            addCircleToList(latLng, 0);
             new ZoomMap().execute();
         } else {
             mTapTextView.setText(R.string.label_internet_error);
