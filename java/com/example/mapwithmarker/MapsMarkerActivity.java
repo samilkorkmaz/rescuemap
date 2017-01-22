@@ -2,6 +2,7 @@ package com.example.mapwithmarker;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
@@ -31,6 +32,7 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.text.SimpleDateFormat;
@@ -42,6 +44,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import static com.example.mapwithmarker.R.id.etDateTime;
+import static com.example.mapwithmarker.R.id.etLocation;
 import static com.example.mapwithmarker.R.id.map;
 import static com.google.android.gms.analytics.internal.zzy.et;
 
@@ -127,12 +130,22 @@ public class MapsMarkerActivity extends AppCompatActivity
         myMap = googleMap;
         myMap.setOnMapLongClickListener(this);
         myMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, DEFAULT_ZOOM_LEVEL));
+        myMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
+            @Override
+            public void onInfoWindowClick(Marker marker) {
+                mTapTextView.setText("Clicked marker " + marker.getTitle());
+            }
+        });
     }
 
     @Override
     public void onMapLongClick(final LatLng clickedLatLng) {
         if (isOnline()) {
+            final String markerTitle = String.format("victim %d", circleList.size()+1);
             View inputsView = getLayoutInflater().inflate(R.layout.inputs, null);
+            EditText etTitle = (EditText) inputsView.findViewById(R.id.etTitle);
+            etTitle.setEnabled(false);
+            etTitle.setText(markerTitle);
             EditText etLocation = (EditText) inputsView.findViewById(R.id.etLocation);
             etLocation.setEnabled(false);
             etLocation.setText(String.format("%1.6f, 0%1.6f", clickedLatLng.latitude, clickedLatLng.longitude));
@@ -183,8 +196,7 @@ public class MapsMarkerActivity extends AppCompatActivity
                         }, 0, SECOND2MS);
                     }
                     currentLatLng = clickedLatLng;
-                    myMap.addMarker(new MarkerOptions().position(currentLatLng).title(
-                            String.format("victim %d", circleList.size()+1)));
+                    myMap.addMarker(new MarkerOptions().position(currentLatLng).title(markerTitle));
                     myMap.moveCamera(CameraUpdateFactory.newLatLng(currentLatLng));
                     CameraPosition currentPos = myMap.getCameraPosition();
                     currentZoomLevel = (int) currentPos.zoom;

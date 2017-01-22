@@ -17,10 +17,19 @@
         android:textStyle="bold" />
 
     <EditText
-        android:id="@+id/etLocation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
+        android:inputType="textPersonName"
+        android:ems="10"
+        android:hint="Title"
+        android:id="@+id/etTitle" />
+
+    <EditText
+        android:id="@+id/etLocation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
         android:ems="10"
         android:hint="@string/location"
         android:inputType="text" />
