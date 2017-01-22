@@ -26,22 +26,13 @@
         android:inputType="text" />
 
     <EditText
-        android:id="@+id/etDate"
+        android:id="@+id/etDateTime"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="5dp"
         android:ems="10"
         android:hint="@string/date"
         android:inputType="date" />
-
-    <EditText
-        android:id="@+id/etTime"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-        android:ems="10"
-        android:hint="@string/time"
-        android:inputType="time" />
 
     <Spinner
         android:id="@+id/sVictimCategory"

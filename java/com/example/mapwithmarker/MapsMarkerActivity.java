@@ -41,7 +41,7 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import static com.example.mapwithmarker.R.id.etDate;
+import static com.example.mapwithmarker.R.id.etDateTime;
 import static com.example.mapwithmarker.R.id.map;
 import static com.google.android.gms.analytics.internal.zzy.et;
 
@@ -134,11 +134,11 @@ public class MapsMarkerActivity extends AppCompatActivity
         if (isOnline()) {
             View inputsView = getLayoutInflater().inflate(R.layout.inputs, null);
             EditText etLocation = (EditText) inputsView.findViewById(R.id.etLocation);
+            etLocation.setEnabled(false);
             etLocation.setText(String.format("%1.6f, 0%1.6f", clickedLatLng.latitude, clickedLatLng.longitude));
-            EditText etDate = (EditText) inputsView.findViewById(R.id.etDate);
-            etDate.setText(new SimpleDateFormat("dd.MM.yyyy").format(new Date()));
-            EditText etTime = (EditText) inputsView.findViewById(R.id.etTime);
-            etTime.setText(new SimpleDateFormat("HH:mm:ss").format(new Date()));
+            EditText eDateTime = (EditText) inputsView.findViewById(R.id.etDateTime);
+            eDateTime.setEnabled(false);
+            eDateTime.setText(new SimpleDateFormat("dd.MM.yyyy / HH:mm:ss").format(new Date()));
             spinner = (Spinner) inputsView.findViewById(R.id.sVictimCategory);
             ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
                     R.array.victim_category_array, android.R.layout.simple_spinner_item);
