@@ -47,6 +47,7 @@ import static com.example.mapwithmarker.R.id.etDateTime;
 import static com.example.mapwithmarker.R.id.etLocation;
 import static com.example.mapwithmarker.R.id.map;
 import static com.google.android.gms.analytics.internal.zzy.et;
+import static com.google.android.gms.cast.internal.zzl.vo;
 
 /**
  * An activity that displays a Google map with a marker (pin) to indicate a particular location.
@@ -134,31 +135,32 @@ public class MapsMarkerActivity extends AppCompatActivity
             @Override
             public void onInfoWindowClick(Marker marker) {
                 mTapTextView.setText("Clicked marker " + marker.getTitle());
+                displayInputsView(marker.getTitle(), marker.getPosition(), false);
+
             }
         });
     }
 
-    @Override
-    public void onMapLongClick(final LatLng clickedLatLng) {
-        if (isOnline()) {
-            final String markerTitle = String.format("victim %d", circleList.size()+1);
-            View inputsView = getLayoutInflater().inflate(R.layout.inputs, null);
-            EditText etTitle = (EditText) inputsView.findViewById(R.id.etTitle);
-            etTitle.setEnabled(false);
-            etTitle.setText(markerTitle);
-            EditText etLocation = (EditText) inputsView.findViewById(R.id.etLocation);
-            etLocation.setEnabled(false);
-            etLocation.setText(String.format("%1.6f, 0%1.6f", clickedLatLng.latitude, clickedLatLng.longitude));
-            EditText eDateTime = (EditText) inputsView.findViewById(R.id.etDateTime);
-            eDateTime.setEnabled(false);
-            eDateTime.setText(new SimpleDateFormat("dd.MM.yyyy / HH:mm:ss").format(new Date()));
-            spinner = (Spinner) inputsView.findViewById(R.id.sVictimCategory);
-            ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
-                    R.array.victim_category_array, android.R.layout.simple_spinner_item);
-            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-            spinner.setAdapter(adapter);
+    private void displayInputsView(final String markerTitle, final LatLng clickedLatLng, boolean showButtons) {
+        View inputsView = getLayoutInflater().inflate(R.layout.inputs, null);
+        EditText etTitle = (EditText) inputsView.findViewById(R.id.etTitle);
+        etTitle.setEnabled(false);
+        etTitle.setText(markerTitle);
+        EditText etLocation = (EditText) inputsView.findViewById(R.id.etLocation);
+        etLocation.setEnabled(false);
+        etLocation.setText(String.format("%1.6f, 0%1.6f", clickedLatLng.latitude, clickedLatLng.longitude));
+        EditText eDateTime = (EditText) inputsView.findViewById(R.id.etDateTime);
+        eDateTime.setEnabled(false);
+        eDateTime.setText(new SimpleDateFormat("dd.MM.yyyy / HH:mm:ss").format(new Date()));
+        spinner = (Spinner) inputsView.findViewById(R.id.sVictimCategory);
+        spinner.setEnabled(showButtons);
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
+                R.array.victim_category_array, android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(adapter);
 
-            AlertDialog.Builder builder = new AlertDialog.Builder(MapsMarkerActivity.this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(MapsMarkerActivity.this);
+        if (showButtons) {
             builder.setPositiveButton(R.string.OK, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
@@ -172,9 +174,11 @@ public class MapsMarkerActivity extends AppCompatActivity
                     dialogInterface.dismiss();
                 }
             });
-            builder.setView(inputsView);
-            final AlertDialog dialog = builder.create();
-            dialog.show();
+        }
+        builder.setView(inputsView);
+        final AlertDialog dialog = builder.create();
+        dialog.show();
+        if (showButtons) {
             dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -204,6 +208,14 @@ public class MapsMarkerActivity extends AppCompatActivity
                     new ZoomMap().execute();
                 }
             });
+        }
+    }
+
+    @Override
+    public void onMapLongClick(final LatLng clickedLatLng) {
+        if (isOnline()) {
+            final String markerTitle = String.format("victim %d", circleList.size()+1);
+            displayInputsView(markerTitle, clickedLatLng, true);
         } else {
             mTapTextView.setText(R.string.label_internet_error);
         }
