@@ -23,7 +23,9 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
 
+        <!-- android:configChanges="orientation|screenSize": To prevent the Activity from getting re-created on configuration changes (screen rotations...). -->
         <activity
+            android:configChanges="orientation|screenSize"
             android:name=".MapsMarkerActivity"
             android:label="@string/title_activity_maps">
             <intent-filter>

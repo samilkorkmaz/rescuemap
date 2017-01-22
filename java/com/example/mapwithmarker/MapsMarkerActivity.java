@@ -258,7 +258,7 @@ public class MapsMarkerActivity extends AppCompatActivity
         @Override
         public void onMapLoaded() {
             mTapTextView.setText(getResources().getText(R.string.label_finished_zoom) + ": " +
-                    myMap.getCameraPosition().zoom);
+                    (int)myMap.getCameraPosition().zoom + " / " + MAX_ZOOM_LEVEL);
             isMapLoaded = true;
         }
     }
