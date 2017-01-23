@@ -9,6 +9,7 @@ import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -18,7 +19,6 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.rescuemap.R;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -37,10 +37,11 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import static com.example.rescuemap.R.id.map;
+import static com.rescuemap.R.id.map;
 
 /**
  * An activity that displays a Google map with a marker (pin) to indicate a particular location.
@@ -64,6 +65,7 @@ public class MapsMarkerActivity extends AppCompatActivity
     List<Circle> circleList = new ArrayList<>();
     private boolean isFirst = true;
     private boolean isZooming = false;
+    private LocationUtil locationUtil;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,6 +77,7 @@ public class MapsMarkerActivity extends AppCompatActivity
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(map);
         mapFragment.getMapAsync(this);
         mTapTextView = (TextView) findViewById(R.id.tap_text);
+        locationUtil = new LocationUtil(this);
     }
 
     private void updateCircles() {
@@ -95,12 +98,12 @@ public class MapsMarkerActivity extends AppCompatActivity
         circleList.set(i, addCircleToMap(latLng, radius_m));
     }
 
+    @NonNull
     private Circle addCircleToMap(LatLng latLng, double radius_m) {
-        Circle mapCircle = myMap.addCircle(new CircleOptions()
+        return myMap.addCircle(new CircleOptions()
                 .center(latLng)
                 .radius(radius_m)
                 .strokeColor(Color.RED));
-        return mapCircle;
     }
 
     private void addCircleToList(LatLng latLng, double radius_m) {
@@ -128,7 +131,6 @@ public class MapsMarkerActivity extends AppCompatActivity
         myMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
             @Override
             public void onInfoWindowClick(Marker marker) {
-                mTapTextView.setText("Clicked marker " + marker.getTitle());
                 displayInputsView(marker.getTitle(), marker.getPosition(), false);
 
             }
@@ -142,7 +144,7 @@ public class MapsMarkerActivity extends AppCompatActivity
         etTitle.setText(markerTitle);
         EditText etLocation = (EditText) inputsView.findViewById(R.id.etLocation);
         etLocation.setEnabled(false);
-        etLocation.setText(String.format("%1.6f, 0%1.6f", clickedLatLng.latitude, clickedLatLng.longitude));
+        etLocation.setText(String.format(Locale.US, "%1.6f, 0%1.6f", clickedLatLng.latitude, clickedLatLng.longitude));
         EditText eDateTime = (EditText) inputsView.findViewById(R.id.etDateTime);
         eDateTime.setEnabled(false);
         eDateTime.setText(new SimpleDateFormat("dd.MM.yyyy / HH:mm:ss").format(new Date()));
@@ -205,15 +207,15 @@ public class MapsMarkerActivity extends AppCompatActivity
 
     @Override
     public void onMapLongClick(final LatLng clickedLatLng) {
-        if (!isZooming && isOnline()) {
-            final String markerTitle = String.format("victim %d", circleList.size()+1);
-            displayInputsView(markerTitle, clickedLatLng, true);
-        } else {
+        if (isOnline()) {
             if (isZooming) {
-                Toast.makeText(MapsMarkerActivity.this, R.string.zoomingInProgress, Toast.LENGTH_SHORT).show();
-            }else {
-                mTapTextView.setText(R.string.label_internet_error);
+                showMessage(R.string.zoomingInProgress, Toast.LENGTH_SHORT);
+            } else {
+                final String markerTitle = String.format("victim %d", circleList.size() + 1);
+                displayInputsView(markerTitle, clickedLatLng, true);
             }
+        } else {
+            showMessage(R.string.label_internet_error, Toast.LENGTH_SHORT);
         }
     }
 
@@ -222,6 +224,22 @@ public class MapsMarkerActivity extends AppCompatActivity
         myMap.setOnMapLoadedCallback(mapLoad);
         CameraUpdate locZoom = CameraUpdateFactory.newLatLngZoom(currentLatLng, iZoom);
         myMap.animateCamera(locZoom);
+    }
+
+    /**
+     * http://stackoverflow.com/a/2115770/51358
+     *
+     * @param msgID
+     */
+    public static void showAlertDialog(int msgID, Context context) {
+        new AlertDialog.Builder(context)
+                .setMessage(context.getResources().getText(msgID))
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .show();
+    }
+
+    private void showMessage(int msgID, int duration) {
+        Toast.makeText(MapsMarkerActivity.this, getResources().getText(msgID), duration).show();
     }
 
     private class ZoomMap extends AsyncTask<String, Void, Void> {
@@ -280,7 +298,7 @@ public class MapsMarkerActivity extends AppCompatActivity
         @Override
         public void onMapLoaded() {
             mTapTextView.setText(getResources().getText(R.string.label_finished_zoom) + ": " +
-                    (int)myMap.getCameraPosition().zoom + " / " + MAX_ZOOM_LEVEL);
+                    (int) myMap.getCameraPosition().zoom + " / " + MAX_ZOOM_LEVEL);
             isMapLoaded = true;
         }
     }
@@ -292,6 +310,16 @@ public class MapsMarkerActivity extends AppCompatActivity
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo netInfo = cm.getActiveNetworkInfo();
         return netInfo != null && netInfo.isConnectedOrConnecting();
+    }
+
+    protected void onStart() {
+        locationUtil.connect();
+        super.onStart();
+    }
+
+    protected void onStop() {
+        locationUtil.disconnect();
+        super.onStop();
     }
 
 }

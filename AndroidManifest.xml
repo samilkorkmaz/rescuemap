@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.rescuemap">
+    package="com.rescuemap">
 
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
 
     <application
         android:allowBackup="true"
@@ -26,7 +27,7 @@
         <!-- android:configChanges="orientation|screenSize": To prevent the Activity from getting re-created on configuration changes (screen rotations...). -->
         <activity
             android:configChanges="orientation|screenSize"
-            android:name="com.example.rescuemap.com.rescuemap.MapsMarkerActivity"
+            android:name="com.rescuemap.MapsMarkerActivity"
             android:label="@string/title_activity_maps">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
