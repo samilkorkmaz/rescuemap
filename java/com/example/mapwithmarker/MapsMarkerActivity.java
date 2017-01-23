@@ -46,6 +46,7 @@ import java.util.TimerTask;
 import static com.example.mapwithmarker.R.id.etDateTime;
 import static com.example.mapwithmarker.R.id.etLocation;
 import static com.example.mapwithmarker.R.id.map;
+import static com.google.android.gms.analytics.internal.zzy.el;
 import static com.google.android.gms.analytics.internal.zzy.et;
 import static com.google.android.gms.cast.internal.zzl.vo;
 
@@ -70,6 +71,7 @@ public class MapsMarkerActivity extends AppCompatActivity
     List<Double> prevRadiusList_m = new ArrayList<>();
     List<Circle> circleList = new ArrayList<>();
     private boolean isFirst = true;
+    private boolean isZooming = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -170,7 +172,6 @@ public class MapsMarkerActivity extends AppCompatActivity
             builder.setNegativeButton(R.string.Cancel, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int which) {
-                    Toast.makeText(MapsMarkerActivity.this, "Pressed Cancel", Toast.LENGTH_SHORT).show();
                     dialogInterface.dismiss();
                 }
             });
@@ -182,7 +183,6 @@ public class MapsMarkerActivity extends AppCompatActivity
             dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Toast.makeText(MapsMarkerActivity.this, "Pressed OK", Toast.LENGTH_SHORT).show();
                     dialog.dismiss();
                     if (isFirst) {
                         isFirst = false;
@@ -213,11 +213,15 @@ public class MapsMarkerActivity extends AppCompatActivity
 
     @Override
     public void onMapLongClick(final LatLng clickedLatLng) {
-        if (isOnline()) {
+        if (!isZooming && isOnline()) {
             final String markerTitle = String.format("victim %d", circleList.size()+1);
             displayInputsView(markerTitle, clickedLatLng, true);
         } else {
-            mTapTextView.setText(R.string.label_internet_error);
+            if (isZooming) {
+                Toast.makeText(MapsMarkerActivity.this, R.string.zoomingInProgress, Toast.LENGTH_SHORT).show();
+            }else {
+                mTapTextView.setText(R.string.label_internet_error);
+            }
         }
     }
 
@@ -235,6 +239,7 @@ public class MapsMarkerActivity extends AppCompatActivity
          */
         @Override
         protected Void doInBackground(String... urls) {
+            isZooming = true;
             for (iZoom = currentZoomLevel; iZoom <= MAX_ZOOM_LEVEL; iZoom++) {
                 mapLoad.setIsMapLoaded(false);
                 runOnUiThread(new Runnable() {
@@ -256,6 +261,7 @@ public class MapsMarkerActivity extends AppCompatActivity
                     setMapZoom(currentZoomLevel);
                 }
             });
+            isZooming = false;
             return null;
         }
 

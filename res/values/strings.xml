@@ -10,6 +10,7 @@
     <string name="victim_category">Victim category</string>
     <string name="OK">OK</string>
     <string name="Cancel">Cancel</string>
+    <string name="zoomingInProgress">Zooming in progress, please wait.</string>
     <string-array name="victim_category_array">
         <item>Child 7 years old</item>
         <item>Teenager 15 years old</item>
