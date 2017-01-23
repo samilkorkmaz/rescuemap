@@ -1,8 +1,7 @@
-package com.example.mapwithmarker;
+package com.rescuemap;
 
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
@@ -13,17 +12,16 @@ import android.os.SystemClock;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.rescuemap.R;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.GoogleMap.OnMapClickListener;
 import com.google.android.gms.maps.GoogleMap.OnMapLoadedCallback;
 import com.google.android.gms.maps.GoogleMap.OnMapLongClickListener;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -37,18 +35,12 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import static com.example.mapwithmarker.R.id.etDateTime;
-import static com.example.mapwithmarker.R.id.etLocation;
-import static com.example.mapwithmarker.R.id.map;
-import static com.google.android.gms.analytics.internal.zzy.el;
-import static com.google.android.gms.analytics.internal.zzy.et;
-import static com.google.android.gms.cast.internal.zzl.vo;
+import static com.example.rescuemap.R.id.map;
 
 /**
  * An activity that displays a Google map with a marker (pin) to indicate a particular location.

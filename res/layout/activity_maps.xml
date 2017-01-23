@@ -3,7 +3,7 @@
     android:id="@+id/activity_maps"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.mapwithmarker.MapsMarkerActivity">
+    tools:context="com.example.rescuemap.com.rescuemap.MapsMarkerActivity">
 
     <fragment xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
@@ -11,7 +11,7 @@
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context="com.example.mapwithmarker.MapsMarkerActivity"></fragment>
+        tools:context="com.example.rescuemap.com.rescuemap.MapsMarkerActivity"></fragment>
 
     <TextView
         android:id="@+id/tap_text"
