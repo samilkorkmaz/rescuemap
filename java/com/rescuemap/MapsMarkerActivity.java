@@ -64,7 +64,6 @@ public class MapsMarkerActivity extends AppCompatActivity
     private MapLoad mapLoad = new MapLoad();
     private int currentZoomLevel;
     private int iZoom;
-    private Spinner spinner;
     List<Long> prevTimeList_ms = new ArrayList<>();
     List<Double> speedList_mps = new ArrayList<>();
     List<Double> prevRadiusList_m = new ArrayList<>();
@@ -114,9 +113,8 @@ public class MapsMarkerActivity extends AppCompatActivity
                 .strokeColor(Color.RED));
     }
 
-    private void addCircleToList(LatLng latLng, double radius_m) {
+    private void addCircleToList(LatLng latLng, double radius_m, double speed_ms) {
         circleList.add(addCircleToMap(latLng, radius_m));
-        double speed_ms = (spinner.getSelectedItemPosition() + 1) * 100;
         speedList_mps.add(speed_ms);
         prevRadiusList_m.add(0D);
         prevTimeList_ms.add(SystemClock.elapsedRealtime());
@@ -156,7 +154,7 @@ public class MapsMarkerActivity extends AppCompatActivity
         EditText eDateTime = (EditText) inputsView.findViewById(R.id.etDateTime);
         eDateTime.setEnabled(false);
         eDateTime.setText(new SimpleDateFormat("dd.MM.yyyy / HH:mm:ss").format(new Date()));
-        spinner = (Spinner) inputsView.findViewById(R.id.sVictimCategory);
+        Spinner spinner = (Spinner) inputsView.findViewById(R.id.sVictimCategory);
         spinner.setEnabled(showButtons);
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
                 R.array.victim_category_array, android.R.layout.simple_spinner_item);
@@ -183,18 +181,19 @@ public class MapsMarkerActivity extends AppCompatActivity
         }
         builder.setView(inputsView);
         final AlertDialog dialog = builder.create();
+        final double speed_ms = (spinner.getSelectedItemPosition() + 1) * 100;
         dialog.show();
         if (showButtons) {
             dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    onMapMarkerOKClick(dialog, clickedLatLng, markerTitle);
+                    onMapMarkerOKClick(dialog, clickedLatLng, markerTitle, speed_ms);
                 }
             });
         }
     }
 
-    private void onMapMarkerOKClick(AlertDialog dialog, LatLng clickedLatLng, String markerTitle) {
+    private void onMapMarkerOKClick(AlertDialog dialog, LatLng clickedLatLng, String markerTitle, double speed_ms) {
         dialog.dismiss();
         if (isFirst) {
             //if this is the first time a marker was added, start periodic marker update job
@@ -217,7 +216,7 @@ public class MapsMarkerActivity extends AppCompatActivity
         myMap.moveCamera(CameraUpdateFactory.newLatLng(currentLatLng));
         CameraPosition currentPos = myMap.getCameraPosition();
         currentZoomLevel = (int) currentPos.zoom;
-        addCircleToList(clickedLatLng, 0);
+        addCircleToList(clickedLatLng, 0, speed_ms);
         new ZoomMap().execute();
     }
 
