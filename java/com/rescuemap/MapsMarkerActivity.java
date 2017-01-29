@@ -4,10 +4,8 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -158,13 +156,13 @@ public class MapsMarkerActivity extends AppCompatActivity
         EditText eDateTime = (EditText) inputsView.findViewById(R.id.etDateTime);
         eDateTime.setEnabled(false);
         eDateTime.setText(new SimpleDateFormat("dd.MM.yyyy / HH:mm:ss").format(new Date()));
-            spinner = (Spinner) inputsView.findViewById(R.id.sVictimCategory);
-            spinner.setEnabled(showButtons);
-            ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
-                    R.array.victim_category_array, android.R.layout.simple_spinner_item);
-            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-            spinner.setAdapter(adapter);
-        if (markerTitle.equals(getAccountName())) {
+        spinner = (Spinner) inputsView.findViewById(R.id.sVictimCategory);
+        spinner.setEnabled(showButtons);
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
+                R.array.victim_category_array, android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(adapter);
+        if (markerTitle.equals(getUserName())) {
             spinner.setVisibility(View.INVISIBLE);
         }
 
@@ -192,6 +190,7 @@ public class MapsMarkerActivity extends AppCompatActivity
                 public void onClick(View v) {
                     dialog.dismiss();
                     if (isFirst) {
+                        //if this is the first time a marker was added, start periodic marker update job
                         isFirst = false;
                         Timer timer = new Timer();
                         timer.scheduleAtFixedRate(new TimerTask() { //update circle drawings every second
@@ -221,7 +220,7 @@ public class MapsMarkerActivity extends AppCompatActivity
     /**
      * http://stackoverflow.com/a/29689855/51358
      */
-    private static String getAccountName() {
+    private static String getUserName() {
         AccountManager manager = AccountManager.get(mapsMarkerActivity);
         if (ActivityCompat.checkSelfPermission(mapsMarkerActivity, GET_ACCOUNTS) != PERMISSION_GRANTED) {
             showAlertDialog("No user account permission, will return empty string as user name", mapsMarkerActivity);
@@ -237,7 +236,7 @@ public class MapsMarkerActivity extends AppCompatActivity
     }
 
     public static void addUserMarkerToMap(double lat_deg, double lon_deg) {
-        myMap.addMarker(new MarkerOptions().position(new LatLng(lat_deg, lon_deg)).title(getAccountName()).
+        myMap.addMarker(new MarkerOptions().position(new LatLng(lat_deg, lon_deg)).title(getUserName()).
                 icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
     }
 
