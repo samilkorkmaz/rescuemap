@@ -1,15 +1,20 @@
 package com.rescuemap;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -26,6 +31,7 @@ import com.google.android.gms.maps.GoogleMap.OnMapLoadedCallback;
 import com.google.android.gms.maps.GoogleMap.OnMapLongClickListener;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
@@ -41,6 +47,8 @@ import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import static android.Manifest.permission.GET_ACCOUNTS;
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static com.rescuemap.R.id.map;
 
 /**
@@ -52,7 +60,7 @@ public class MapsMarkerActivity extends AppCompatActivity
     private static final int MAX_ZOOM_LEVEL = 21;
     private static final long SECOND2MS = 1000;
     private static final float DEFAULT_ZOOM_LEVEL = 5.0f;
-    private GoogleMap myMap;
+    private static GoogleMap myMap;
     private TextView mTapTextView;
     private LatLng currentLatLng = new LatLng(39.933333, 32.866667); //Ankara
     private MapLoad mapLoad = new MapLoad();
@@ -66,6 +74,7 @@ public class MapsMarkerActivity extends AppCompatActivity
     private boolean isFirst = true;
     private boolean isZooming = false;
     private LocationUtil locationUtil;
+    private static MapsMarkerActivity mapsMarkerActivity;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,6 +87,7 @@ public class MapsMarkerActivity extends AppCompatActivity
         mapFragment.getMapAsync(this);
         mTapTextView = (TextView) findViewById(R.id.tap_text);
         locationUtil = new LocationUtil(this);
+        mapsMarkerActivity = this;
     }
 
     private void updateCircles() {
@@ -148,12 +158,15 @@ public class MapsMarkerActivity extends AppCompatActivity
         EditText eDateTime = (EditText) inputsView.findViewById(R.id.etDateTime);
         eDateTime.setEnabled(false);
         eDateTime.setText(new SimpleDateFormat("dd.MM.yyyy / HH:mm:ss").format(new Date()));
-        spinner = (Spinner) inputsView.findViewById(R.id.sVictimCategory);
-        spinner.setEnabled(showButtons);
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
-                R.array.victim_category_array, android.R.layout.simple_spinner_item);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinner.setAdapter(adapter);
+            spinner = (Spinner) inputsView.findViewById(R.id.sVictimCategory);
+            spinner.setEnabled(showButtons);
+            ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
+                    R.array.victim_category_array, android.R.layout.simple_spinner_item);
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            spinner.setAdapter(adapter);
+        if (markerTitle.equals(getAccountName())) {
+            spinner.setVisibility(View.INVISIBLE);
+        }
 
         AlertDialog.Builder builder = new AlertDialog.Builder(MapsMarkerActivity.this);
         if (showButtons) {
@@ -205,6 +218,29 @@ public class MapsMarkerActivity extends AppCompatActivity
         }
     }
 
+    /**
+     * http://stackoverflow.com/a/29689855/51358
+     */
+    private static String getAccountName() {
+        AccountManager manager = AccountManager.get(mapsMarkerActivity);
+        if (ActivityCompat.checkSelfPermission(mapsMarkerActivity, GET_ACCOUNTS) != PERMISSION_GRANTED) {
+            showAlertDialog("No user account permission, will return empty string as user name", mapsMarkerActivity);
+            return "";
+        } else {
+            Account[] accounts = manager.getAccountsByType("com.google");
+            //http://stackoverflow.com/a/29689845/51358
+            String email = accounts[0].name;
+            String[] parts = email.split("@");
+            String nickname = parts[0];
+            return nickname;
+        }
+    }
+
+    public static void addUserMarkerToMap(double lat_deg, double lon_deg) {
+        myMap.addMarker(new MarkerOptions().position(new LatLng(lat_deg, lon_deg)).title(getAccountName()).
+                icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
+    }
+
     @Override
     public void onMapLongClick(final LatLng clickedLatLng) {
         if (isOnline()) {
@@ -232,8 +268,12 @@ public class MapsMarkerActivity extends AppCompatActivity
      * @param msgID
      */
     public static void showAlertDialog(int msgID, Context context) {
+        showAlertDialog(context.getResources().getText(msgID), context);
+    }
+
+    public static void showAlertDialog(CharSequence msg, Context context) {
         new AlertDialog.Builder(context)
-                .setMessage(context.getResources().getText(msgID))
+                .setMessage(msg)
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .show();
     }

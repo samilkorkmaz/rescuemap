@@ -54,6 +54,8 @@ public class LocationUtil implements GoogleApiClient.ConnectionCallbacks,
             return;
         } else {
             mUserLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+            MapsMarkerActivity.addUserMarkerToMap(mUserLocation.getLatitude(), mUserLocation.getLongitude());
+            //MapsMarkerActivity.showAlertDialog(mUserLocation.toString(), context);
         }
     }
 
@@ -70,5 +72,9 @@ public class LocationUtil implements GoogleApiClient.ConnectionCallbacks,
     @Override
     public void onLocationChanged(Location location) {
 
+    }
+
+    public Location getUserLocation() {
+        return mUserLocation;
     }
 }
