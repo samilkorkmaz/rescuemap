@@ -188,33 +188,37 @@ public class MapsMarkerActivity extends AppCompatActivity
             dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    dialog.dismiss();
-                    if (isFirst) {
-                        //if this is the first time a marker was added, start periodic marker update job
-                        isFirst = false;
-                        Timer timer = new Timer();
-                        timer.scheduleAtFixedRate(new TimerTask() { //update circle drawings every second
-                            @Override
-                            public void run() {
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        updateCircles();
-                                    }
-                                });
-                            }
-                        }, 0, SECOND2MS);
-                    }
-                    currentLatLng = clickedLatLng;
-                    myMap.addMarker(new MarkerOptions().position(currentLatLng).title(markerTitle));
-                    myMap.moveCamera(CameraUpdateFactory.newLatLng(currentLatLng));
-                    CameraPosition currentPos = myMap.getCameraPosition();
-                    currentZoomLevel = (int) currentPos.zoom;
-                    addCircleToList(clickedLatLng, 0);
-                    new ZoomMap().execute();
+                    onMapMarkerOKClick(dialog, clickedLatLng, markerTitle);
                 }
             });
         }
+    }
+
+    private void onMapMarkerOKClick(AlertDialog dialog, LatLng clickedLatLng, String markerTitle) {
+        dialog.dismiss();
+        if (isFirst) {
+            //if this is the first time a marker was added, start periodic marker update job
+            isFirst = false;
+            Timer timer = new Timer();
+            timer.scheduleAtFixedRate(new TimerTask() { //update circle drawings every second
+                @Override
+                public void run() {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            updateCircles();
+                        }
+                    });
+                }
+            }, 0, SECOND2MS);
+        }
+        currentLatLng = clickedLatLng;
+        myMap.addMarker(new MarkerOptions().position(currentLatLng).title(markerTitle));
+        myMap.moveCamera(CameraUpdateFactory.newLatLng(currentLatLng));
+        CameraPosition currentPos = myMap.getCameraPosition();
+        currentZoomLevel = (int) currentPos.zoom;
+        addCircleToList(clickedLatLng, 0);
+        new ZoomMap().execute();
     }
 
     /**
