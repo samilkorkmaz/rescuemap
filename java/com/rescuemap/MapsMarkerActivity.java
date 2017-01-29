@@ -59,19 +59,21 @@ public class MapsMarkerActivity extends AppCompatActivity
     private static final long SECOND2MS = 1000;
     private static final float DEFAULT_ZOOM_LEVEL = 5.0f;
     private static GoogleMap myMap;
+    private static boolean isFirstTimeOfAccountPermissionError = true;
     private TextView mTapTextView;
     private LatLng currentLatLng = new LatLng(39.933333, 32.866667); //Ankara
     private MapLoad mapLoad = new MapLoad();
     private int currentZoomLevel;
     private int iZoom;
-    List<Long> prevTimeList_ms = new ArrayList<>();
-    List<Double> speedList_mps = new ArrayList<>();
-    List<Double> prevRadiusList_m = new ArrayList<>();
-    List<Circle> circleList = new ArrayList<>();
+    private List<Long> prevTimeList_ms = new ArrayList<>();
+    private List<Double> prevRadiusList_m = new ArrayList<>();
+    private List<Circle> circleList = new ArrayList<>();
+    private static List<Marker> markerList = new ArrayList<>();
     private boolean isFirst = true;
     private boolean isZooming = false;
     private LocationUtil locationUtil;
     private static MapsMarkerActivity mapsMarkerActivity;
+    private static int markerCount = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,7 +96,8 @@ public class MapsMarkerActivity extends AppCompatActivity
             circleList.get(i).remove(); //clears previous circle
             long elapsedTime_s = (SystemClock.elapsedRealtime() - prevTimeList_ms.get(i)) / SECOND2MS;
             prevTimeList_ms.set(i, SystemClock.elapsedRealtime());
-            double deltaRadius_m = elapsedTime_s * speedList_mps.get(i);
+            double speed_mps = ((VictimProperties) markerList.get(i).getTag()).getSpeed_mps();
+            double deltaRadius_m = elapsedTime_s * speed_mps;
             double newRadius_m = prevRadiusList_m.get(i) + deltaRadius_m;
             prevRadiusList_m.set(i, newRadius_m);
             updateCirclesList(i, latLng, newRadius_m);
@@ -113,9 +116,8 @@ public class MapsMarkerActivity extends AppCompatActivity
                 .strokeColor(Color.RED));
     }
 
-    private void addCircleToList(LatLng latLng, double radius_m, double speed_ms) {
+    private void addCircleToList(LatLng latLng, double radius_m) {
         circleList.add(addCircleToMap(latLng, radius_m));
-        speedList_mps.add(speed_ms);
         prevRadiusList_m.add(0D);
         prevTimeList_ms.add(SystemClock.elapsedRealtime());
     }
@@ -137,13 +139,14 @@ public class MapsMarkerActivity extends AppCompatActivity
         myMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
             @Override
             public void onInfoWindowClick(Marker marker) {
-                displayInputsView(marker.getTitle(), marker.getPosition(), false);
+                displayInputsView(marker.getTitle(), marker.getPosition(), false, marker);
 
             }
         });
     }
 
-    private void displayInputsView(final String markerTitle, final LatLng clickedLatLng, boolean showButtons) {
+    private void displayInputsView(final String markerTitle, final LatLng clickedLatLng, boolean showButtons,
+                                   Marker marker) {
         View inputsView = getLayoutInflater().inflate(R.layout.inputs, null);
         EditText etTitle = (EditText) inputsView.findViewById(R.id.etTitle);
         etTitle.setEnabled(false);
@@ -154,14 +157,18 @@ public class MapsMarkerActivity extends AppCompatActivity
         EditText eDateTime = (EditText) inputsView.findViewById(R.id.etDateTime);
         eDateTime.setEnabled(false);
         eDateTime.setText(new SimpleDateFormat("dd.MM.yyyy / HH:mm:ss").format(new Date()));
-        Spinner spinner = (Spinner) inputsView.findViewById(R.id.sVictimCategory);
+        final Spinner spinner = (Spinner) inputsView.findViewById(R.id.sVictimCategory);
         spinner.setEnabled(showButtons);
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
                 R.array.victim_category_array, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);
-        if (markerTitle.equals(getUserName())) {
+        if (markerTitle.equals(getUserName())) { //user marker was clicked
             spinner.setVisibility(View.INVISIBLE);
+        } else {
+            if (marker != null) {//an existing victim marker was clicked --> show its info
+                spinner.setSelection(((VictimProperties) marker.getTag()).getCategoryIndex());
+            }
         }
 
         AlertDialog.Builder builder = new AlertDialog.Builder(MapsMarkerActivity.this);
@@ -181,19 +188,19 @@ public class MapsMarkerActivity extends AppCompatActivity
         }
         builder.setView(inputsView);
         final AlertDialog dialog = builder.create();
-        final double speed_ms = (spinner.getSelectedItemPosition() + 1) * 100;
         dialog.show();
         if (showButtons) {
             dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    onMapMarkerOKClick(dialog, clickedLatLng, markerTitle, speed_ms);
+                    onMapMarkerOKClick(dialog, clickedLatLng, markerTitle, spinner.getSelectedItemPosition());
                 }
             });
         }
     }
 
-    private void onMapMarkerOKClick(AlertDialog dialog, LatLng clickedLatLng, String markerTitle, double speed_ms) {
+    private void onMapMarkerOKClick(AlertDialog dialog, LatLng clickedLatLng, String markerTitle,
+                                    int victimCategoryIndex) {
         dialog.dismiss();
         if (isFirst) {
             //if this is the first time a marker was added, start periodic marker update job
@@ -212,11 +219,14 @@ public class MapsMarkerActivity extends AppCompatActivity
             }, 0, SECOND2MS);
         }
         currentLatLng = clickedLatLng;
-        myMap.addMarker(new MarkerOptions().position(currentLatLng).title(markerTitle));
+        Marker marker = myMap.addMarker(new MarkerOptions().position(currentLatLng).title(markerTitle));
+        markerCount++;
+        marker.setTag(new VictimProperties(markerCount, victimCategoryIndex));
+        markerList.add(marker);
         myMap.moveCamera(CameraUpdateFactory.newLatLng(currentLatLng));
         CameraPosition currentPos = myMap.getCameraPosition();
         currentZoomLevel = (int) currentPos.zoom;
-        addCircleToList(clickedLatLng, 0, speed_ms);
+        addCircleToList(clickedLatLng, 0);
         new ZoomMap().execute();
     }
 
@@ -226,7 +236,10 @@ public class MapsMarkerActivity extends AppCompatActivity
     private static String getUserName() {
         AccountManager manager = AccountManager.get(mapsMarkerActivity);
         if (ActivityCompat.checkSelfPermission(mapsMarkerActivity, GET_ACCOUNTS) != PERMISSION_GRANTED) {
-            showAlertDialog("No user account permission, will return empty string as user name", mapsMarkerActivity);
+            if (isFirstTimeOfAccountPermissionError) {
+                showAlertDialog(mapsMarkerActivity.getString(R.string.accountPermissionError), mapsMarkerActivity);
+            }
+            isFirstTimeOfAccountPermissionError = false;
             return "";
         } else {
             Account[] accounts = manager.getAccountsByType("com.google");
@@ -250,7 +263,7 @@ public class MapsMarkerActivity extends AppCompatActivity
                 showMessage(R.string.zoomingInProgress, Toast.LENGTH_SHORT);
             } else {
                 final String markerTitle = String.format("victim %d", circleList.size() + 1);
-                displayInputsView(markerTitle, clickedLatLng, true);
+                displayInputsView(markerTitle, clickedLatLng, true, null);
             }
         } else {
             showMessage(R.string.label_internet_error, Toast.LENGTH_SHORT);

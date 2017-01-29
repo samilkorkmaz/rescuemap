@@ -12,6 +12,7 @@
     <string name="Cancel">Cancel</string>
     <string name="zoomingInProgress">Zooming in progress, please wait.</string>
     <string name="noFineLocationPermission">No access permitted for fine user location! Please go to Settings/Apps/Rescue Map/Permissions and enable Location.</string>
+    <string name="accountPermissionError">No user account permission, will return empty string as user name</string>
     <string-array name="victim_category_array">
         <item>Child 7 years old</item>
         <item>Teenager 15 years old</item>
