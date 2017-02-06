@@ -13,6 +13,13 @@
     <string name="zoomingInProgress">Zooming in progress, please wait.</string>
     <string name="noFineLocationPermission">No access permitted for fine user location! Please go to Settings/Apps/Rescue Map/Permissions and enable Location.</string>
     <string name="accountPermissionError">No user account permission, will return empty string as user name</string>
+    <string name="child_7_years_old_speed_mps">Child 7 years old speed [m/s]</string>
+    <string name="child_15_years_old_speed_mps">Child 15 years old speed [m/s]</string>
+    <string name="adult_30_years_old_speed_mps">Adult 30 years old speed [m/s]</string>
+    <string name="settings">Settings</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="restore_defaults">Restore defaults</string>
     <string-array name="victim_category_array">
         <item>Child 7 years old</item>
         <item>Teenager 15 years old</item>

@@ -87,6 +87,7 @@ public class MapsMarkerActivity extends AppCompatActivity
         mTapTextView = (TextView) findViewById(R.id.tap_text);
         locationUtil = new LocationUtil(this);
         mapsMarkerActivity = this;
+        MySettings.init(this);
     }
 
     private void updateCircles() {
@@ -295,6 +296,40 @@ public class MapsMarkerActivity extends AppCompatActivity
 
     private void showMessage(int msgID, int duration) {
         Toast.makeText(MapsMarkerActivity.this, getResources().getText(msgID), duration).show();
+    }
+
+    public void btnShowSettingsOnClick(View view) {
+        View settingsView = getLayoutInflater().inflate(R.layout.my_settings, null);
+        showSettings(settingsView);
+        AlertDialog.Builder builder = new AlertDialog.Builder(MapsMarkerActivity.this);
+        builder.setView(settingsView);
+        final AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    private void showSettings(View settingsView) {
+        EditText etChild7YearsOldSpeed_mps = (EditText) settingsView.findViewById(R.id.etChild7YearsOldSpeed_mps);
+        etChild7YearsOldSpeed_mps.setText(String.valueOf(MySettings.getChild7YearsOldSpeedMps()));
+
+        EditText etChild15YearsOldSpeed_mps = (EditText) settingsView.findViewById(R.id.etChild15YearsOldSpeed_mps);
+        etChild15YearsOldSpeed_mps.setText(String.valueOf(MySettings.getChild15YearsOldSpeedMps()));
+
+        EditText etAdult30YearsOldSpeed_mps = (EditText) settingsView.findViewById(R.id.etAdult30YearsOldSpeed_mps);
+        etAdult30YearsOldSpeed_mps.setText(String.valueOf(MySettings.getAdult30YearsOldSpeedMps()));
+    }
+
+    public void btnSaveClick(View view) {
+        //TODO
+    }
+
+    public void btnCancelClick(View view) {
+        view.setVisibility(View.INVISIBLE);
+    }
+
+    public void btnRestoreDefaultsClick(View view) {
+        MySettings.restoreDefaults();
+        View settingsView = getLayoutInflater().inflate(R.layout.my_settings, null);
+        showSettings(settingsView);
     }
 
     private class ZoomMap extends AsyncTask<String, Void, Void> {
