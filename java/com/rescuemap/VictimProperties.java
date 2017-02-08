@@ -12,7 +12,19 @@ public class VictimProperties {
     public VictimProperties(int id, int categoryIndex) {
         this.id = id;
         this.categoryIndex = categoryIndex;
-        this.speed_ms = (categoryIndex + 1) * 100;
+        switch (categoryIndex) {
+            case 0:
+                this.speed_ms = MySettings.getChild7YearsOldSpeedMps();
+                break;
+            case 1:
+                this.speed_ms = MySettings.getChild15YearsOldSpeedMps();
+                break;
+            case 2:
+                this.speed_ms = MySettings.getAdult30YearsOldSpeedMps();
+                break;
+            default:
+                //TODO error message
+        }
     }
 
     public int getID() {

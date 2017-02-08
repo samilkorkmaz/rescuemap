@@ -28,7 +28,7 @@
         <!-- android:configChanges="orientation|screenSize": To prevent the Activity from getting re-created on configuration changes (screen rotations...). -->
         <activity
             android:configChanges="orientation|screenSize"
-            android:name="com.rescuemap.MapsMarkerActivity"
+            android:name=".MapsMarkerActivity"
             android:label="@string/title_activity_maps">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -36,6 +36,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".SettingsActivity"></activity>
     </application>
 
 </manifest>
