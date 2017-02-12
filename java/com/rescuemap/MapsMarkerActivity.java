@@ -49,6 +49,7 @@ import java.util.TimerTask;
 import static android.Manifest.permission.GET_ACCOUNTS;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static com.rescuemap.R.id.map;
+import static com.rescuemap.R.string.date;
 import static java.lang.System.currentTimeMillis;
 
 /**
@@ -163,11 +164,19 @@ public class MapsMarkerActivity extends AppCompatActivity
         etLon.setEnabled(showButtons);
         etLon.setText(String.format(Locale.US, "0%1.6f", clickedLatLng.longitude));
 
+        Date currentDate = new Date();
         final EditText etDate = (EditText) inputsView.findViewById(R.id.etDate);
         etDate.setEnabled(showButtons);
-        String dateTimeFormat = "dd.MM.yyyy / HH:mm:ss";
-        final SimpleDateFormat dateFormatter = new SimpleDateFormat(dateTimeFormat);
-        etDate.setText(dateFormatter.format(new Date()));
+        String dateFormat = "dd.MM.yyyy";
+        SimpleDateFormat dateFormatter = new SimpleDateFormat(dateFormat);
+        etDate.setText(dateFormatter.format(currentDate));
+
+        final EditText etTime = (EditText) inputsView.findViewById(R.id.etTime);
+        etTime.setEnabled(showButtons);
+        String timeFormat = "HH:mm:ss";
+        SimpleDateFormat timeFormatter = new SimpleDateFormat(timeFormat);
+        etTime.setText(timeFormatter.format(currentDate));
+
         final Spinner spinner = (Spinner) inputsView.findViewById(R.id.sVictimCategory);
         spinner.setEnabled(showButtons);
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
@@ -208,8 +217,10 @@ public class MapsMarkerActivity extends AppCompatActivity
                     double lon_deg = Double.parseDouble(etLon.getText().toString());
                     LatLng latLng = new LatLng(lat_deg, lon_deg);
 
-                    String dateStr = etDate.getText().toString();
-                    Date date = dateFormatter.parse(dateStr, new ParsePosition(0));
+                    String dateTimeStr = etDate.getText().toString() + " / " + etTime.getText().toString();
+                    String dateTimeFormat = "dd.MM.yyyy / HH:mm:ss";
+                    SimpleDateFormat dateTimeFormatter = new SimpleDateFormat(dateTimeFormat);
+                    Date date = dateTimeFormatter.parse(dateTimeStr, new ParsePosition(0));
 
                     onMapMarkerOKClick(dialog, latLng, date, markerTitle, spinner.getSelectedItemPosition());
                 }

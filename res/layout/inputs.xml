@@ -33,34 +33,49 @@
         <EditText
             android:id="@+id/etLat"
             android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
             android:layout_marginTop="5dp"
             android:ems="10"
             android:hint="@string/latitude"
-            android:inputType="text"
-            android:layout_weight="1"
-            android:layout_width="wrap_content" />
+            android:inputType="text"/>
 
         <EditText
             android:id="@+id/etLon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Longitude"
             android:layout_marginTop="5dp"
             android:ems="10"
             android:hint="@string/longitude" />
-            android:layout_weight="1"
-            android:inputType="text"
+
+        android:layout_weight="1"
+        android:inputType="text"
 
     </LinearLayout>
 
-    <EditText
-        android:id="@+id/etDate"
+    <LinearLayout
+        android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-        android:ems="10"
-        android:hint="@string/date"
-        android:inputType="date" />
+        android:weightSum="1">
+
+        <EditText
+            android:id="@+id/etDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:ems="10"
+            android:hint="@string/date"
+            android:inputType="date" />
+
+        <EditText
+            android:id="@+id/etTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:ems="10"
+            android:hint="@string/time" />
+            android:inputType="date"
+    </LinearLayout>
 
     <Spinner
         android:id="@+id/sVictimCategory"

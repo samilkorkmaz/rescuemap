@@ -11,9 +11,9 @@ public class MySettings {
     private static final String CHILD_7_YEARS_OLD_SPEED_MPS_STR = "CHILD_7_YEARS_OLD_SPEED_MPS_STR";
     private static final String CHILD_15_YEARS_OLD_SPEED_MPS_STR = "CHILD_15_YEARS_OLD_SPEED_MPS_STR";
     private static final String ADULT_30_YEARS_OLD_SPEED_MPS_STR = "ADULT_30_YEARS_OLD_SPEED_MPS_STR";
-    private static final float CHILD_7_YEARS_OLD_DEFAULT_SPEED_MPS = 100f;
-    private static final float CHILD_15_YEARS_OLD_DEFAULT_SPEED_MPS = 200f;
-    private static final float ADULT_30_YEARS_OLD_DEFAULT_SPEED_MPS = 300f;
+    private static final float CHILD_7_YEARS_OLD_DEFAULT_SPEED_MPS = 10f;
+    private static final float CHILD_15_YEARS_OLD_DEFAULT_SPEED_MPS = 20f;
+    private static final float ADULT_30_YEARS_OLD_DEFAULT_SPEED_MPS = 30f;
     private static SharedPreferences settings;
 
     public static void init(Context context) {
