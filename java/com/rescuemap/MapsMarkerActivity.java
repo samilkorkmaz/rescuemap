@@ -11,7 +11,6 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
@@ -38,6 +37,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -49,6 +49,7 @@ import java.util.TimerTask;
 import static android.Manifest.permission.GET_ACCOUNTS;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static com.rescuemap.R.id.map;
+import static java.lang.System.currentTimeMillis;
 
 /**
  * An activity that displays a Google map with a marker (pin) to indicate a particular location.
@@ -66,7 +67,7 @@ public class MapsMarkerActivity extends AppCompatActivity
     private MapLoad mapLoad = new MapLoad();
     private int currentZoomLevel;
     private int iZoom;
-    private List<Long> prevTimeList_ms = new ArrayList<>();
+    private List<Date> prevTimeList_ms = new ArrayList<>();
     private List<Double> prevRadiusList_m = new ArrayList<>();
     private List<Circle> circleList = new ArrayList<>();
     private static List<Marker> markerList = new ArrayList<>();
@@ -96,8 +97,8 @@ public class MapsMarkerActivity extends AppCompatActivity
             LatLng center = circleList.get(i).getCenter();
             LatLng latLng = new LatLng(center.latitude, center.longitude);
             circleList.get(i).remove(); //clears previous circle
-            long elapsedTime_s = (SystemClock.elapsedRealtime() - prevTimeList_ms.get(i)) / SECOND2MS;
-            prevTimeList_ms.set(i, SystemClock.elapsedRealtime());
+            long elapsedTime_s = (currentTimeMillis() - prevTimeList_ms.get(i).getTime()) / SECOND2MS;
+            prevTimeList_ms.set(i, new Date(currentTimeMillis()));
             double speed_mps = ((VictimProperties) markerList.get(i).getTag()).getSpeed_mps();
             double deltaRadius_m = elapsedTime_s * speed_mps;
             double newRadius_m = prevRadiusList_m.get(i) + deltaRadius_m;
@@ -118,10 +119,10 @@ public class MapsMarkerActivity extends AppCompatActivity
                 .strokeColor(Color.RED));
     }
 
-    private void addCircleToList(LatLng latLng, double radius_m) {
+    private void addCircleToList(LatLng latLng, Date date, double radius_m) {
         circleList.add(addCircleToMap(latLng, radius_m));
         prevRadiusList_m.add(0D);
-        prevTimeList_ms.add(SystemClock.elapsedRealtime());
+        prevTimeList_ms.add(date);
     }
 
     /**
@@ -153,12 +154,20 @@ public class MapsMarkerActivity extends AppCompatActivity
         EditText etTitle = (EditText) inputsView.findViewById(R.id.etTitle);
         etTitle.setEnabled(false);
         etTitle.setText(markerTitle);
-        EditText etLocation = (EditText) inputsView.findViewById(R.id.etLocation);
-        etLocation.setEnabled(false);
-        etLocation.setText(String.format(Locale.US, "%1.6f, 0%1.6f", clickedLatLng.latitude, clickedLatLng.longitude));
-        EditText eDateTime = (EditText) inputsView.findViewById(R.id.etDateTime);
-        eDateTime.setEnabled(false);
-        eDateTime.setText(new SimpleDateFormat("dd.MM.yyyy / HH:mm:ss").format(new Date()));
+
+        final EditText etLat = (EditText) inputsView.findViewById(R.id.etLat);
+        etLat.setEnabled(showButtons);
+        etLat.setText(String.format(Locale.US, "%1.6f", clickedLatLng.latitude));
+
+        final EditText etLon = (EditText) inputsView.findViewById(R.id.etLon);
+        etLon.setEnabled(showButtons);
+        etLon.setText(String.format(Locale.US, "0%1.6f", clickedLatLng.longitude));
+
+        final EditText etDate = (EditText) inputsView.findViewById(R.id.etDate);
+        etDate.setEnabled(showButtons);
+        String dateTimeFormat = "dd.MM.yyyy / HH:mm:ss";
+        final SimpleDateFormat dateFormatter = new SimpleDateFormat(dateTimeFormat);
+        etDate.setText(dateFormatter.format(new Date()));
         final Spinner spinner = (Spinner) inputsView.findViewById(R.id.sVictimCategory);
         spinner.setEnabled(showButtons);
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
@@ -195,13 +204,20 @@ public class MapsMarkerActivity extends AppCompatActivity
             dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    onMapMarkerOKClick(dialog, clickedLatLng, markerTitle, spinner.getSelectedItemPosition());
+                    double lat_deg = Double.parseDouble(etLat.getText().toString());
+                    double lon_deg = Double.parseDouble(etLon.getText().toString());
+                    LatLng latLng = new LatLng(lat_deg, lon_deg);
+
+                    String dateStr = etDate.getText().toString();
+                    Date date = dateFormatter.parse(dateStr, new ParsePosition(0));
+
+                    onMapMarkerOKClick(dialog, latLng, date, markerTitle, spinner.getSelectedItemPosition());
                 }
             });
         }
     }
 
-    private void onMapMarkerOKClick(AlertDialog dialog, LatLng clickedLatLng, String markerTitle,
+    private void onMapMarkerOKClick(AlertDialog dialog, LatLng latLng, Date date, String markerTitle,
                                     int victimCategoryIndex) {
         dialog.dismiss();
         if (isFirst) {
@@ -220,7 +236,7 @@ public class MapsMarkerActivity extends AppCompatActivity
                 }
             }, 0, SECOND2MS);
         }
-        currentLatLng = clickedLatLng;
+        currentLatLng = latLng;
         Marker marker = myMap.addMarker(new MarkerOptions().position(currentLatLng).title(markerTitle));
         markerCount++;
         marker.setTag(new VictimProperties(markerCount, victimCategoryIndex));
@@ -228,7 +244,7 @@ public class MapsMarkerActivity extends AppCompatActivity
         myMap.moveCamera(CameraUpdateFactory.newLatLng(currentLatLng));
         CameraPosition currentPos = myMap.getCameraPosition();
         currentZoomLevel = (int) currentPos.zoom;
-        addCircleToList(clickedLatLng, 0);
+        addCircleToList(latLng, date, 0);
         new ZoomMap().execute();
     }
 

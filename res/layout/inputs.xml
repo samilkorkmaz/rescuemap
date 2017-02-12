@@ -25,17 +25,36 @@
         android:hint="Title"
         android:id="@+id/etTitle" />
 
-    <EditText
-        android:id="@+id/etLocation"
+    <LinearLayout
+        android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-        android:ems="10"
-        android:hint="@string/location"
-        android:inputType="text" />
+        android:layout_height="wrap_content">
+
+        <EditText
+            android:id="@+id/etLat"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:ems="10"
+            android:hint="@string/latitude"
+            android:inputType="text"
+            android:layout_weight="1"
+            android:layout_width="wrap_content" />
+
+        <EditText
+            android:id="@+id/etLon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Longitude"
+            android:layout_marginTop="5dp"
+            android:ems="10"
+            android:hint="@string/longitude" />
+            android:layout_weight="1"
+            android:inputType="text"
+
+    </LinearLayout>
 
     <EditText
-        android:id="@+id/etDateTime"
+        android:id="@+id/etDate"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="5dp"
@@ -49,4 +68,5 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="5dp"
         android:hint="@string/victim_category" />
+
 </LinearLayout>

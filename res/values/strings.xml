@@ -4,7 +4,7 @@
     <string name="label_finished_zoom">Finished zoom level</string>
     <string name="label_internet_error">ERROR: No internet connection!</string>
     <string name="inputs">Inputs</string>
-    <string name="location">Location</string>
+    <string name="latitude">Latitude</string>
     <string name="date">Date</string>
     <string name="time">Time</string>
     <string name="victim_category">Victim category</string>
@@ -20,6 +20,7 @@
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>
     <string name="restore_defaults">Restore defaults</string>
+    <string name="longitude">Longitude</string>
     <string-array name="victim_category_array">
         <item>Child 7 years old</item>
         <item>Teenager 15 years old</item>
