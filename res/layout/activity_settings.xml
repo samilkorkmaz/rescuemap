@@ -60,29 +60,38 @@
         android:ems="10"
         android:id="@+id/etAdult30YearsOldSpeed_mps" />
 
-    <Button
-        android:text="@string/save"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAllCaps="false"
-        android:id="@+id/btnSave"
-        android:onClick="btnSaveClick" />
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
-    <Button
-        android:text="@string/cancel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAllCaps="false"
-        android:id="@+id/btnCancel"
-        android:onClick="btnCancelClick" />
+        <Button
+            android:text="@string/save"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAllCaps="false"
+            android:id="@+id/btnSave"
+            android:onClick="btnSaveClick"
+            android:layout_weight="1" />
 
-    <Button
-        android:text="@string/restore_defaults"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAllCaps="false"
-        android:id="@+id/btnRestoreDefaults"
-        android:onClick="btnRestoreDefaultsClick" />
+        <Button
+            android:text="@string/cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAllCaps="false"
+            android:id="@+id/btnCancel"
+            android:onClick="btnCancelClick"
+            android:layout_weight="1" />
+
+        <Button
+            android:text="@string/restore_defaults"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAllCaps="false"
+            android:id="@+id/btnRestoreDefaults"
+            android:onClick="btnRestoreDefaultsClick"
+            android:layout_weight="1" />
+    </LinearLayout>
 
 
 </LinearLayout>
