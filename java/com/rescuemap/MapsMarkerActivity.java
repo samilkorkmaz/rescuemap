@@ -15,6 +15,8 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
@@ -49,7 +51,6 @@ import java.util.TimerTask;
 import static android.Manifest.permission.GET_ACCOUNTS;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static com.rescuemap.R.id.map;
-import static com.rescuemap.R.string.date;
 import static java.lang.System.currentTimeMillis;
 
 /**
@@ -91,6 +92,25 @@ public class MapsMarkerActivity extends AppCompatActivity
         locationUtil = new LocationUtil(this);
         mapsMarkerActivity = this;
         MySettings.init(this);
+    }
+
+    // create an action bar button
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.settings_menu, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    // handle button activities
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.settingsbutton) {
+            Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     private void updateCircles() {
@@ -325,12 +345,6 @@ public class MapsMarkerActivity extends AppCompatActivity
     private void showMessage(int msgID, int duration) {
         Toast.makeText(MapsMarkerActivity.this, getResources().getText(msgID), duration).show();
     }
-
-    public void btnShowSettingsOnClick(View view) {
-        Intent intent = new Intent(this, SettingsActivity.class);
-        startActivity(intent);
-    }
-
 
     private class ZoomMap extends AsyncTask<String, Void, Void> {
         /**

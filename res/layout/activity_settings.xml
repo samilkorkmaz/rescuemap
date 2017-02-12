@@ -93,5 +93,36 @@
             android:layout_weight="1" />
     </LinearLayout>
 
+    <TextView
+        android:text="Version 0.2, developed by Şamil Korkmaz"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="5dp"
+        android:id="@+id/tvAbout" />
+
+    <TextView
+        android:text="email: samil.korkmaz@gmail.com"
+        android:autoLink="email"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="5dp"
+        android:id="@+id/tvEmail" />
+
+    <TextView
+        android:text="GitHub: https://github.com/samilkorkmaz/rescuemap"
+        android:autoLink="web"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="5dp"
+        android:id="@+id/tvGithub" />
+
+    <TextView
+        android:text="Blog: samilkorkmaz.blogspot.com"
+        android:autoLink="web"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="5dp"
+        android:id="@+id/tvBlog" />
+
 
 </LinearLayout>
