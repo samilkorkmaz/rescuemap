@@ -15,50 +15,72 @@
         android:layout_gravity="center"
         android:layout_marginTop="5dp"
         android:text="@string/settings"
-        android:textSize="25sp"
+        android:textSize="18sp"
         android:textStyle="bold" />
 
-    <TextView
-        android:text="@string/child_7_years_old_speed_mps"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:id="@+id/tvChild7YearsOldSpeed" />
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:inputType="numberDecimal"
-        android:ems="10"
-        android:id="@+id/etChild7YearsOldSpeed_mps" />
+        <TextView
+            android:text="@string/child_7_years_old_speed_mps"
+            android:layout_width="220dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:id="@+id/tvChild7YearsOldSpeed"/>
 
-    <TextView
-        android:text="@string/child_15_years_old_speed_mps"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:id="@+id/tvChild15YearsOldSpeed" />
+        <EditText
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:inputType="numberDecimal"
+            android:layout_gravity="center"
+            android:ems="10"
+            android:id="@+id/etChild7YearsOldSpeed_mps" />
+    </LinearLayout>
 
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:inputType="numberDecimal"
-        android:ems="10"
-        android:id="@+id/etChild15YearsOldSpeed_mps" />
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
-    <TextView
-        android:text="@string/adult_30_years_old_speed_mps"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:id="@+id/tvAdult30YearsOldSpeed" />
+        <TextView
+            android:text="@string/child_15_years_old_speed_mps"
+            android:layout_width="220dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:id="@+id/tvChild15YearsOldSpeed"/>
 
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:inputType="numberDecimal"
-        android:ems="10"
-        android:id="@+id/etAdult30YearsOldSpeed_mps" />
+        <EditText
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:inputType="numberDecimal"
+            android:layout_gravity="center"
+            android:ems="10"
+            android:id="@+id/etChild15YearsOldSpeed_mps"/>
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:text="@string/adult_30_years_old_speed_mps"
+            android:layout_width="220dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:id="@+id/tvAdult30YearsOldSpeed"/>
+
+        <EditText
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:inputType="numberDecimal"
+            android:ems="10"
+            android:id="@+id/etAdult30YearsOldSpeed_mps"/>
+    </LinearLayout>
 
     <LinearLayout
         android:orientation="horizontal"
@@ -123,6 +145,5 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="5dp"
         android:id="@+id/tvBlog" />
-
 
 </LinearLayout>
