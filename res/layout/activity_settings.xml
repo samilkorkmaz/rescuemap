@@ -116,7 +116,7 @@
     </LinearLayout>
 
     <TextView
-        android:text="Version x.x, developed by Şamil Korkmaz"
+        android:text="Version x.x, copyright Şamil Korkmaz"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="5dp"
