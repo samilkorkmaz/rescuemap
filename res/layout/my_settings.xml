@@ -15,7 +15,7 @@
         android:textStyle="bold" />
 
     <TextView
-        android:text="@string/child_7_years_old_speed_mps"
+        android:text="@string/child_7_years_old_speed_kmph"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
@@ -26,10 +26,10 @@
         android:layout_height="wrap_content"
         android:inputType="numberDecimal"
         android:ems="10"
-        android:id="@+id/etChild7YearsOldSpeed_mps" />
+        android:id="@+id/etChild7YearsOldSpeed_kmph" />
 
     <TextView
-        android:text="@string/child_15_years_old_speed_mps"
+        android:text="@string/child_15_years_old_speed_kmph"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
@@ -40,10 +40,10 @@
         android:layout_height="wrap_content"
         android:inputType="numberDecimal"
         android:ems="10"
-        android:id="@+id/etChild15YearsOldSpeed_mps" />
+        android:id="@+id/etChild15YearsOldSpeed_kmph" />
 
     <TextView
-        android:text="@string/adult_30_years_old_speed_mps"
+        android:text="@string/adult_30_years_old_speed_kmph"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
@@ -54,7 +54,7 @@
         android:layout_height="wrap_content"
         android:inputType="numberDecimal"
         android:ems="10"
-        android:id="@+id/etAdult30YearsOldSpeed_mps" />
+        android:id="@+id/etAdult30YearsOldSpeed_kmph" />
 
     <LinearLayout
         android:orientation="horizontal"
