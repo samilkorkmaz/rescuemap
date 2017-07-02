@@ -172,8 +172,9 @@ public class MapsMarkerActivity extends AppCompatActivity
     private void displayInputsView(final String markerTitle, final LatLng clickedLatLng, boolean showButtons,
                                    Marker marker) {
         View inputsView = getLayoutInflater().inflate(R.layout.inputs, null);
-        EditText etTitle = (EditText) inputsView.findViewById(R.id.etTitle);
-        etTitle.setEnabled(false);
+        final EditText etTitle = (EditText) inputsView.findViewById(R.id.etTitle);
+        boolean isUserMarkerClicked = markerTitle.equals(getUserName());
+        etTitle.setEnabled(isUserMarkerClicked || !showButtons ? false:true);
         etTitle.setText(markerTitle);
 
         final EditText etLat = (EditText) inputsView.findViewById(R.id.etLat);
@@ -203,7 +204,7 @@ public class MapsMarkerActivity extends AppCompatActivity
                 R.array.victim_category_array, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);
-        if (markerTitle.equals(getUserName())) { //user marker was clicked
+        if (isUserMarkerClicked) { //user marker was clicked
             spinner.setVisibility(View.INVISIBLE);
         } else {
             if (marker != null) {//an existing victim marker was clicked --> show its info
@@ -242,7 +243,7 @@ public class MapsMarkerActivity extends AppCompatActivity
                     SimpleDateFormat dateTimeFormatter = new SimpleDateFormat(dateTimeFormat);
                     Date date = dateTimeFormatter.parse(dateTimeStr, new ParsePosition(0));
 
-                    onMapMarkerOKClick(dialog, latLng, date, markerTitle, spinner.getSelectedItemPosition());
+                    onMapMarkerOKClick(dialog, latLng, date, String.valueOf(etTitle.getText()), spinner.getSelectedItemPosition());
                 }
             });
         }
