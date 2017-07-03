@@ -69,10 +69,7 @@ public class MapsMarkerActivity extends AppCompatActivity
     private MapLoad mapLoad = new MapLoad();
     private int currentZoomLevel;
     private int iZoom;
-    private List<Date> prevTimeList_ms = new ArrayList<>();
-    private List<Double> prevRadiusList_m = new ArrayList<>();
-    private List<Circle> circleList = new ArrayList<>();
-    private static List<Marker> markerList = new ArrayList<>();
+    private static List<MyMarker> markerList = new ArrayList<>();
     private boolean isFirst = true;
     private boolean isZooming = false;
     private LocationUtil locationUtil;
@@ -114,22 +111,18 @@ public class MapsMarkerActivity extends AppCompatActivity
     }
 
     private void updateCircles() {
-        for (int i = 0; i < circleList.size(); i++) {
-            LatLng center = circleList.get(i).getCenter();
+        for (MyMarker myMarker: markerList) {
+            LatLng center = myMarker.getCircle().getCenter();
+            myMarker.getCircle().remove(); //deletes circle from map
             LatLng latLng = new LatLng(center.latitude, center.longitude);
-            circleList.get(i).remove(); //clears previous circle
-            long elapsedTime_s = (currentTimeMillis() - prevTimeList_ms.get(i).getTime()) / SECOND2MS;
-            prevTimeList_ms.set(i, new Date(currentTimeMillis()));
-            double speed_mps = ((VictimProperties) markerList.get(i).getTag()).getSpeed_mps();
+            long elapsedTime_s = (currentTimeMillis() - myMarker.getPrevTime_ms().getTime()) / SECOND2MS;
+            myMarker.setPrevTime_ms(new Date(currentTimeMillis()));
+            double speed_mps = ((VictimProperties) myMarker.getTag()).getSpeed_mps();
             double deltaRadius_m = elapsedTime_s * speed_mps;
-            double newRadius_m = prevRadiusList_m.get(i) + deltaRadius_m;
-            prevRadiusList_m.set(i, newRadius_m);
-            updateCirclesList(i, latLng, newRadius_m);
+            double newRadius_m = myMarker.getPrevRadius_m() + deltaRadius_m;
+            myMarker.setPrevRadius_m(newRadius_m);
+            myMarker.setGoogleMapCircle(addCircleToMap(latLng, newRadius_m));
         }
-    }
-
-    private void updateCirclesList(int i, LatLng latLng, double radius_m) {
-        circleList.set(i, addCircleToMap(latLng, radius_m));
     }
 
     @NonNull
@@ -138,12 +131,6 @@ public class MapsMarkerActivity extends AppCompatActivity
                 .center(latLng)
                 .radius(radius_m)
                 .strokeColor(Color.RED));
-    }
-
-    private void addCircleToList(LatLng latLng, Date date, double radius_m) {
-        circleList.add(addCircleToMap(latLng, radius_m));
-        prevRadiusList_m.add(0D);
-        prevTimeList_ms.add(date);
     }
 
     /**
@@ -272,11 +259,14 @@ public class MapsMarkerActivity extends AppCompatActivity
         Marker marker = myMap.addMarker(new MarkerOptions().position(currentLatLng).title(markerTitle));
         markerCount++;
         marker.setTag(new VictimProperties(markerCount, victimCategoryIndex));
-        markerList.add(marker);
         myMap.moveCamera(CameraUpdateFactory.newLatLng(currentLatLng));
         CameraPosition currentPos = myMap.getCameraPosition();
         currentZoomLevel = (int) currentPos.zoom;
-        addCircleToList(latLng, date, 0);
+
+        Circle circle = addCircleToMap(latLng, 0);
+        MyMarker myMarker = new MyMarker(marker, circle, date);
+
+        markerList.add(myMarker);
         new ZoomMap().execute();
     }
 
@@ -312,7 +302,7 @@ public class MapsMarkerActivity extends AppCompatActivity
             if (isZooming) {
                 showMessage(R.string.zoomingInProgress, Toast.LENGTH_SHORT);
             } else {
-                final String markerTitle = String.format("victim %d", circleList.size() + 1);
+                final String markerTitle = String.format("victim %d", markerList.size() + 1);
                 displayInputsView(markerTitle, clickedLatLng, true, null);
             }
         } else {
