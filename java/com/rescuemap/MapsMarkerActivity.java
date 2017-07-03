@@ -110,7 +110,7 @@ public class MapsMarkerActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
-    private void updateCircles() {
+    private void updateMarkers() {
         for (MyMarker myMarker: markerList) {
             LatLng center = myMarker.getCircle().getCenter();
             myMarker.getCircle().remove(); //deletes circle from map
@@ -249,7 +249,7 @@ public class MapsMarkerActivity extends AppCompatActivity
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            updateCircles();
+                            updateMarkers();
                         }
                     });
                 }
