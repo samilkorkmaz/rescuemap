@@ -55,6 +55,11 @@ public class MyMarker {
         return googleMapMarker.getTag();
     }
 
+    public void remove() {
+        googleMapCircle.remove();
+        googleMapMarker.remove();
+    }
+
 
 
 }
