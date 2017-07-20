@@ -76,6 +76,12 @@ public class MapsMarkerActivity extends AppCompatActivity
     private static MapsMarkerActivity mapsMarkerActivity;
     private static int markerCount = 0;
 
+    private EditText etTitle;
+    private EditText etLat;
+    private EditText etLon;
+    private EditText etDate;
+    private EditText etTime;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -159,43 +165,23 @@ public class MapsMarkerActivity extends AppCompatActivity
     private void displayInputsView(final String markerTitle, final LatLng clickedLatLng, boolean showButtons,
                                    Marker marker) {
         View inputsView = getLayoutInflater().inflate(R.layout.inputs, null);
-        final EditText etTitle = (EditText) inputsView.findViewById(R.id.etTitle);
-        boolean isUserMarkerClicked = markerTitle.equals(getUserName());
-        etTitle.setEnabled(isUserMarkerClicked || !showButtons ? false:true);
-        etTitle.setText(markerTitle);
-
-        final EditText etLat = (EditText) inputsView.findViewById(R.id.etLat);
-        etLat.setEnabled(showButtons);
-        etLat.setText(String.format(Locale.US, "%1.6f", clickedLatLng.latitude));
-
-        final EditText etLon = (EditText) inputsView.findViewById(R.id.etLon);
-        etLon.setEnabled(showButtons);
-        etLon.setText(String.format(Locale.US, "0%1.6f", clickedLatLng.longitude));
-
-        Date currentDate = new Date();
-        final EditText etDate = (EditText) inputsView.findViewById(R.id.etDate);
-        etDate.setEnabled(showButtons);
-        String dateFormat = "dd.MM.yyyy";
-        SimpleDateFormat dateFormatter = new SimpleDateFormat(dateFormat);
-        etDate.setText(dateFormatter.format(currentDate));
-
-        final EditText etTime = (EditText) inputsView.findViewById(R.id.etTime);
-        etTime.setEnabled(showButtons);
-        String timeFormat = "HH:mm:ss";
-        SimpleDateFormat timeFormatter = new SimpleDateFormat(timeFormat);
-        etTime.setText(timeFormatter.format(currentDate));
-
         final Spinner spinner = (Spinner) inputsView.findViewById(R.id.sVictimCategory);
         spinner.setEnabled(showButtons);
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
                 R.array.victim_category_array, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);
+        boolean isUserMarkerClicked = markerTitle.equals(getUserName());
+        VictimProperties victim;
         if (isUserMarkerClicked) { //user marker was clicked
             spinner.setVisibility(View.INVISIBLE);
         } else {
             if (marker != null) {//an existing victim marker was clicked --> show its info
-                spinner.setSelection(((VictimProperties) marker.getTag()).getCategoryIndex());
+                victim = (VictimProperties) marker.getTag();
+                spinner.setSelection(victim.getCategoryIndex());
+                showVictimData(inputsView, isUserMarkerClicked, showButtons, victim.getName(), victim.getLatLng(), victim.getDate());
+            } else {
+                showVictimData(inputsView, isUserMarkerClicked, showButtons, markerTitle, clickedLatLng, new Date());
             }
         }
 
@@ -236,6 +222,32 @@ public class MapsMarkerActivity extends AppCompatActivity
         }
     }
 
+    private void showVictimData(View inputsView, boolean isUserMarkerClicked, boolean showButtons, String name, LatLng latLng, Date date) {
+        etTitle = (EditText) inputsView.findViewById(R.id.etTitle);
+        etTitle.setEnabled(isUserMarkerClicked || !showButtons ? false:true);
+        etTitle.setText(name);
+
+        etLat = (EditText) inputsView.findViewById(R.id.etLat);
+        etLat.setEnabled(showButtons);
+        etLat.setText(String.format(Locale.US, "%1.6f", latLng.latitude));
+
+        etLon = (EditText) inputsView.findViewById(R.id.etLon);
+        etLon.setEnabled(showButtons);
+        etLon.setText(String.format(Locale.US, "0%1.6f", latLng.longitude));
+
+        etDate = (EditText) inputsView.findViewById(R.id.etDate);
+        etDate.setEnabled(showButtons);
+        String dateFormat = "dd.MM.yyyy";
+        SimpleDateFormat dateFormatter = new SimpleDateFormat(dateFormat);
+        etDate.setText(dateFormatter.format(date));
+
+        etTime = (EditText) inputsView.findViewById(R.id.etTime);
+        etTime.setEnabled(showButtons);
+        String timeFormat = "HH:mm:ss";
+        SimpleDateFormat timeFormatter = new SimpleDateFormat(timeFormat);
+        etTime.setText(timeFormatter.format(date));
+    }
+
     private void onMapMarkerOKClick(AlertDialog dialog, LatLng latLng, Date date, String markerTitle,
                                     int victimCategoryIndex) {
         dialog.dismiss();
@@ -258,7 +270,7 @@ public class MapsMarkerActivity extends AppCompatActivity
         currentLatLng = latLng;
         Marker marker = myMap.addMarker(new MarkerOptions().position(currentLatLng).title(markerTitle));
         markerCount++;
-        marker.setTag(new VictimProperties(markerCount, victimCategoryIndex));
+        marker.setTag(new VictimProperties(markerTitle, markerCount, victimCategoryIndex, latLng, date));
         myMap.moveCamera(CameraUpdateFactory.newLatLng(currentLatLng));
         CameraPosition currentPos = myMap.getCameraPosition();
         currentZoomLevel = (int) currentPos.zoom;
