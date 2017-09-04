@@ -339,7 +339,7 @@ public class MapsMarkerActivity extends AppCompatActivity
                 displayInputsView(markerTitle, clickedLatLng, true, null);
             }
         } else {
-            showMessage(R.string.label_internet_error, Toast.LENGTH_SHORT);
+            showMessage(R.string.label_internet_error, Toast.LENGTH_SHORT); 
         }
     }
 
