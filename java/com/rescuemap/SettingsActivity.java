@@ -30,7 +30,7 @@ public class SettingsActivity extends AppCompatActivity {
         etChild7YearsOldSpeed_kmph.setText(String.valueOf(MySettings.getChild7YearsOldSpeedKmph()));
         etChild15YearsOldSpeed_kmph.setText(String.valueOf(MySettings.getChild15YearsOldSpeedKmph()));
         etAdult30YearsOldSpeed_kmph.setText(String.valueOf(MySettings.getAdult30YearsOldSpeedKmph()));
-        tvAbout.setText("Version " + getVersionName() + ", copyright Şamil Korkmaz. Thanks to Tolga S.");
+        tvAbout.setText("Version " + getVersionName() + ", copyright Şamil Korkmaz 2017. Thanks to Tolga S.");
     }
 
     public void btnSaveClick(View view) {

@@ -133,10 +133,14 @@ public class MapsMarkerActivity extends AppCompatActivity
 
     @NonNull
     private Circle addCircleToMap(LatLng latLng, double radius_m) {
+        return addCircleToMap(latLng, radius_m, Color.RED);
+    }
+
+    private Circle addCircleToMap(LatLng latLng, double radius_m, int color) {
         return myMap.addCircle(new CircleOptions()
                 .center(latLng)
                 .radius(radius_m)
-                .strokeColor(Color.RED));
+                .strokeColor(color));
     }
 
     /**
@@ -270,13 +274,15 @@ public class MapsMarkerActivity extends AppCompatActivity
         currentLatLng = latLng;
         Marker marker = myMap.addMarker(new MarkerOptions().position(currentLatLng).title(markerTitle));
         markerCount++;
-        marker.setTag(new VictimProperties(markerTitle, markerCount, victimCategoryIndex, latLng, date));
+        VictimProperties victimProperties = new VictimProperties(markerTitle, markerCount, victimCategoryIndex, latLng, date);
+        marker.setTag(victimProperties);
         myMap.moveCamera(CameraUpdateFactory.newLatLng(currentLatLng));
         CameraPosition currentPos = myMap.getCameraPosition();
         currentZoomLevel = (int) currentPos.zoom;
 
         Circle circle = addCircleToMap(latLng, 0);
-        MyMarker myMarker = new MyMarker(marker, circle, date);
+        Circle constCircle = addCircleToMap(latLng, victimProperties.getConstRadius_m(), Color.BLACK);
+        MyMarker myMarker = new MyMarker(marker, circle, constCircle, date);
 
         markerList.add(myMarker);
         new ZoomMap().execute();

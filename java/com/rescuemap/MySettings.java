@@ -12,8 +12,11 @@ public class MySettings {
     private static final String CHILD_15_YEARS_OLD_SPEED_KMPH_STR = "CHILD_15_YEARS_OLD_SPEED_KMPH_STR";
     private static final String ADULT_30_YEARS_OLD_SPEED_KMPH_STR = "ADULT_30_YEARS_OLD_SPEED_KMPH_STR";
     private static final float CHILD_7_YEARS_OLD_DEFAULT_SPEED_KMPH = 3f;
+    private static final float CHILD_7_YEARS_OLD_CONST_RADIUS_M = 7e3f;
     private static final float CHILD_15_YEARS_OLD_DEFAULT_SPEED_KMPH = 6f;
+    private static final float CHILD_15_YEARS_OLD_CONST_RADIUS_M = 6.55e3f;
     private static final float ADULT_30_YEARS_OLD_DEFAULT_SPEED_KMPH = 9f;
+    private static final float ADULT_30_YEARS_OLD_CONST_RADIUS_M = 19e3f;
     private static SharedPreferences settings;
 
     public static void init(Context context) {
@@ -28,6 +31,10 @@ public class MySettings {
 
     public static float getChild7YearsOldSpeedKmph() {
         return settings.getFloat(CHILD_7_YEARS_OLD_SPEED_KMPH_STR, CHILD_7_YEARS_OLD_DEFAULT_SPEED_KMPH);
+    }
+
+    public static float getChild7YearsOldConstRadiusM() {
+        return CHILD_7_YEARS_OLD_CONST_RADIUS_M;
     }
 
     public static float getChild7YearsOldDefaultSpeedKmph() {
@@ -46,6 +53,10 @@ public class MySettings {
         return CHILD_15_YEARS_OLD_DEFAULT_SPEED_KMPH;
     }
 
+    public static float getChild15YearsOldConstRadiusM() {
+        return CHILD_15_YEARS_OLD_CONST_RADIUS_M;
+    }
+
     public static void setChild15YearsOldSpeedKmph(float child15YearsOldSpeed_kmph) {
         settings.edit().putFloat(CHILD_15_YEARS_OLD_SPEED_KMPH_STR, child15YearsOldSpeed_kmph).commit();
     }
@@ -56,6 +67,10 @@ public class MySettings {
 
     public static float getAdult30YearsOldDefaultSpeedKmph() {
         return ADULT_30_YEARS_OLD_DEFAULT_SPEED_KMPH;
+    }
+
+    public static float getAdult30YearsOldConstRadiusM() {
+        return ADULT_30_YEARS_OLD_CONST_RADIUS_M;
     }
 
     public static void setAdult30YearsOldSpeedKmph(float adult30YearsOldSpeed_kmph) {

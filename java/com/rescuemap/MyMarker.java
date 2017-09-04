@@ -41,12 +41,14 @@ public class MyMarker {
     }
 
     private Circle googleMapCircle;
+    private final Circle constCircle;
     private double prevRadius_m;
     private Date prevTime_ms;
 
-    public MyMarker(Marker googleMapMarker, Circle googleMapCircle, Date date) {
+    public MyMarker(Marker googleMapMarker, Circle googleMapCircle, Circle constCircle, Date date) {
         this.googleMapMarker = googleMapMarker;
         this.googleMapCircle = googleMapCircle;
+        this.constCircle = constCircle;
         prevRadius_m = 0;
         prevTime_ms = date;
     }
@@ -58,8 +60,11 @@ public class MyMarker {
     public void remove() {
         googleMapCircle.remove();
         googleMapMarker.remove();
+        constCircle.remove();
     }
 
 
-
+    public Circle getConstCircle() {
+        return constCircle;
+    }
 }

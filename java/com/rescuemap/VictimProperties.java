@@ -53,6 +53,24 @@ public class VictimProperties {
         return speed_ms;
     }
 
+    public double getConstRadius_m() {
+        double contRadius_m = Double.NaN;
+        switch (categoryIndex) {
+            case 0:
+                contRadius_m = MySettings.getChild7YearsOldConstRadiusM();
+                break;
+            case 1:
+                contRadius_m = MySettings.getChild15YearsOldConstRadiusM();
+                break;
+            case 2:
+                contRadius_m = MySettings.getAdult30YearsOldConstRadiusM();
+                break;
+            default:
+                //TODO error message
+        }
+        return contRadius_m;
+    }
+
     public String getName() {return name;}
 
     public LatLng getLatLng() {
