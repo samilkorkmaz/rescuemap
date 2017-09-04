@@ -21,6 +21,7 @@
     <string name="cancel">Cancel</string>
     <string name="restore_defaults">Restore defaults</string>
     <string name="longitude">Longitude</string>
+    <string name="delete">Delete</string>
     <string-array name="victim_category_array">
         <item>Child 7 years old</item>
         <item>Teenager 15 years old</item>

@@ -19,6 +19,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -59,6 +60,7 @@ import static java.lang.System.currentTimeMillis;
 public class MapsMarkerActivity extends AppCompatActivity
         implements OnMapReadyCallback, OnMapLongClickListener {
 
+    private AlertDialog alertDialog = null;
     private static final int MAX_ZOOM_LEVEL = 21;
     private static final long SECOND2MS = 1000;
     private static final float DEFAULT_ZOOM_LEVEL = 5.0f;
@@ -69,8 +71,8 @@ public class MapsMarkerActivity extends AppCompatActivity
     private MapLoad mapLoad = new MapLoad();
     private int currentZoomLevel;
     private int iZoom;
-    private static List<MyMarker> markerList = new ArrayList<>();
-    private boolean isFirst = true;
+    private static List<MyMarker> myMarkerList = new ArrayList<>();
+    private boolean isFirstTimeAMarkerIsAddedToMap = true;
     private boolean isZooming = false;
     private LocationUtil locationUtil;
     private static MapsMarkerActivity mapsMarkerActivity;
@@ -81,6 +83,8 @@ public class MapsMarkerActivity extends AppCompatActivity
     private EditText etLon;
     private EditText etDate;
     private EditText etTime;
+    private Button btnDelete;
+    private Marker selectedMarker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -117,7 +121,7 @@ public class MapsMarkerActivity extends AppCompatActivity
     }
 
     private void updateMarkers() {
-        for (MyMarker myMarker: markerList) {
+        for (MyMarker myMarker: myMarkerList) {
             LatLng center = myMarker.getCircle().getCenter();
             myMarker.getCircle().remove(); //deletes circle from map
             LatLng latLng = new LatLng(center.latitude, center.longitude);
@@ -166,11 +170,12 @@ public class MapsMarkerActivity extends AppCompatActivity
         });
     }
 
-    private void displayInputsView(final String markerTitle, final LatLng clickedLatLng, boolean showButtons,
+    private void displayInputsView(final String markerTitle, final LatLng clickedLatLng, boolean newlyCreated,
                                    Marker marker) {
+        selectedMarker = marker;
         View inputsView = getLayoutInflater().inflate(R.layout.inputs, null);
         final Spinner spinner = (Spinner) inputsView.findViewById(R.id.sVictimCategory);
-        spinner.setEnabled(showButtons);
+        spinner.setEnabled(newlyCreated);
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
                 R.array.victim_category_array, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -183,14 +188,15 @@ public class MapsMarkerActivity extends AppCompatActivity
             if (marker != null) {//an existing victim marker was clicked --> show its info
                 victim = (VictimProperties) marker.getTag();
                 spinner.setSelection(victim.getCategoryIndex());
-                showVictimData(inputsView, isUserMarkerClicked, showButtons, victim.getName(), victim.getLatLng(), victim.getDate());
+                showVictimData(inputsView, isUserMarkerClicked, newlyCreated, victim.getName(), victim.getLatLng(), victim.getDate());
             } else {
-                showVictimData(inputsView, isUserMarkerClicked, showButtons, markerTitle, clickedLatLng, new Date());
+                showVictimData(inputsView, isUserMarkerClicked, newlyCreated, markerTitle, clickedLatLng, new Date());
             }
         }
 
         AlertDialog.Builder builder = new AlertDialog.Builder(MapsMarkerActivity.this);
-        if (showButtons) {
+        if (newlyCreated) {
+            btnDelete.setVisibility(View.INVISIBLE);
             builder.setPositiveButton(R.string.OK, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
@@ -203,12 +209,14 @@ public class MapsMarkerActivity extends AppCompatActivity
                     dialogInterface.dismiss();
                 }
             });
+        } else {
+            btnDelete.setVisibility(View.VISIBLE);
         }
         builder.setView(inputsView);
-        final AlertDialog dialog = builder.create();
-        dialog.show();
-        if (showButtons) {
-            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+        alertDialog = builder.create();
+        alertDialog.show();
+        if (newlyCreated) {
+            alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     double lat_deg = Double.parseDouble(etLat.getText().toString());
@@ -220,7 +228,7 @@ public class MapsMarkerActivity extends AppCompatActivity
                     SimpleDateFormat dateTimeFormatter = new SimpleDateFormat(dateTimeFormat);
                     Date date = dateTimeFormatter.parse(dateTimeStr, new ParsePosition(0));
 
-                    onMapMarkerOKClick(dialog, latLng, date, String.valueOf(etTitle.getText()), spinner.getSelectedItemPosition());
+                    onMapMarkerOKClick(alertDialog, latLng, date, String.valueOf(etTitle.getText()), spinner.getSelectedItemPosition());
                 }
             });
         }
@@ -250,14 +258,16 @@ public class MapsMarkerActivity extends AppCompatActivity
         String timeFormat = "HH:mm:ss";
         SimpleDateFormat timeFormatter = new SimpleDateFormat(timeFormat);
         etTime.setText(timeFormatter.format(date));
+
+        btnDelete = (Button)inputsView.findViewById(R.id.btDelete);
     }
 
     private void onMapMarkerOKClick(AlertDialog dialog, LatLng latLng, Date date, String markerTitle,
                                     int victimCategoryIndex) {
         dialog.dismiss();
-        if (isFirst) {
+        if (isFirstTimeAMarkerIsAddedToMap) {
             //if this is the first time a marker was added, start periodic marker update job
-            isFirst = false;
+            isFirstTimeAMarkerIsAddedToMap = false;
             Timer timer = new Timer();
             timer.scheduleAtFixedRate(new TimerTask() { //update circle drawings every second
                 @Override
@@ -284,7 +294,7 @@ public class MapsMarkerActivity extends AppCompatActivity
         Circle constCircle = addCircleToMap(latLng, victimProperties.getConstRadius_m(), Color.BLACK);
         MyMarker myMarker = new MyMarker(marker, circle, constCircle, date);
 
-        markerList.add(myMarker);
+        myMarkerList.add(myMarker);
         new ZoomMap().execute();
     }
 
@@ -320,7 +330,12 @@ public class MapsMarkerActivity extends AppCompatActivity
             if (isZooming) {
                 showMessage(R.string.zoomingInProgress, Toast.LENGTH_SHORT);
             } else {
-                final String markerTitle = String.format("victim %d", markerList.size() + 1);
+                String markerTitle = String.format("victim %d", myMarkerList.size() + 1);
+                for (MyMarker myMarker: myMarkerList) {
+                    if (myMarker.getMarker().getTitle().equals(markerTitle)) {
+                        markerTitle = markerTitle + "0"; //prevent markers with same title. Can happen when a marker was deleted and a new one was added.
+                    }
+                }
                 displayInputsView(markerTitle, clickedLatLng, true, null);
             }
         } else {
@@ -433,6 +448,17 @@ public class MapsMarkerActivity extends AppCompatActivity
     protected void onStop() {
         locationUtil.disconnect();
         super.onStop();
+    }
+
+    public void btnDeleteClick(View view) {
+        for (MyMarker myMarker: myMarkerList) {
+            if (myMarker.getMarker().getPosition().equals(selectedMarker.getPosition())) {
+                myMarkerList.remove(myMarkerList.indexOf(myMarker));
+                myMarker.remove();
+                alertDialog.dismiss();
+                break;
+            }
+        }
     }
 
 }

@@ -84,4 +84,11 @@
         android:layout_marginTop="5dp"
         android:hint="@string/victim_category" />
 
+    <Button
+        android:id="@+id/btDelete"
+        android:text="@string/delete"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="btnDeleteClick"/>
+
 </LinearLayout>
